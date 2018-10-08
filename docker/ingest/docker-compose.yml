@@ -1,0 +1,17 @@
+version: '2'
+
+services:
+  capture:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.capture
+    environment:
+      http_proxy: 
+      PULL_URL: rtmp://10.32.0.222:1935/falcon/video
+    volumes: 
+      - video:/video
+
+volumes:
+  video: 
+      
+
