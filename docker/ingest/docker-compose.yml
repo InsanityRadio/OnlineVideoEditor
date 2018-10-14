@@ -7,9 +7,16 @@ services:
       dockerfile: ./Dockerfile.capture
     environment:
       http_proxy: 
-      PULL_URL: rtmp://10.32.0.222:1935/falcon/video
+#      PULL_URL: rtmp://10.32.0.222:1935/falcon/video
     volumes: 
       - video:/video
+
+  ffmpeg:
+    image: jrottenberg/ffmpeg
+    command: -re -stream_loop -1 -i /video.ts -c:v copy -c:a copy -bsf:a aac_adtstoasc -f flv rtmp://capture/video/video
+    volumes:
+      - ./dummy.ts:/video.ts
+
 
 volumes:
   video: 
