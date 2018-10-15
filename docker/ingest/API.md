@@ -1,6 +1,6 @@
-# `ingest` API Reference
+## `ingest` API Reference
 
-## `/bootstrap`
+### `/bootstrap`
 
 Returns the following JSON object
 
@@ -10,14 +10,14 @@ Returns the following JSON object
 	"services": [
 		{
 			"name": "service",
-			"start_time": <earliest timestamp the system has available in its circular buffer>,
-			"end_time": <most recent timestamp the system has in its circular buffer (reference only)>,
+			"start_time": "<earliest timestamp the system has available in its circular buffer>",
+			"end_time": "<most recent timestamp the system has in its circular buffer (reference only)>",
 		}
 	]
 }
 ```
 
-## `/:service/preview?start_time=int&end_time=int`
+### `/:service/preview?start_time=int&end_time=int`
 
 Generates a HLS/m3u8 preview file that allows the user to watch this portion of video with an appropriate player.
 
