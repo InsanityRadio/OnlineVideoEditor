@@ -10,9 +10,10 @@ module OVE
 			def initialize service, path
 
 				@service = service
+				@root = path
 				files = scan_directory 
 
-				@start_time = files.length ? file_to_ts files[0] : 0
+				@start_time = files.length ? file_to_ts(files[0]) : 0
 				@end_time = 0
 
 				files.each { |f|
@@ -24,11 +25,11 @@ module OVE
 			end
 
 			private
-			def scan_directory service
+			def scan_directory
 
 				files = []
 
-				Dir.chdir(root) do 
+				Dir.chdir(@root) do 
 					files = Dir.glob(@service + '-*.ts')
 				end
 

@@ -1,3 +1,5 @@
+require 'sinatra'
+
 module OVE
 	module Service
 

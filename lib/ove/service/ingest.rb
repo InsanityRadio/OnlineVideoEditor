@@ -8,13 +8,13 @@ module OVE
 
 				session[:csrf_token] ||= SecureRandom.hex
 
-				my_services = OVE::Ingest.SourceProvider.instance.get_sources
+				my_services = OVE::Ingest::SourceProvider.instance.get_sources
 
 				send_json(
 
 					csrf_token: session[:csrf_token],
 
-					services: my_services.map( { |s| 
+					services: my_services.map { |s| 
 
 						{
 							service: s.service,
@@ -22,7 +22,7 @@ module OVE
 							end_time: s.end_time
 						}
 
-					})
+					}
 
 				)
 
