@@ -13,7 +13,7 @@ module OVE
 				@root = path
 				files = scan_directory 
 
-				@start_time = files.length ? file_to_ts(files[0]) : 0
+				@start_time = files.length > 0 ? file_to_ts(files[0]) : 0
 				@end_time = 0
 
 				files.each { |f|

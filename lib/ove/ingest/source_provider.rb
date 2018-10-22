@@ -11,7 +11,7 @@ module OVE
 			def get_sources
 
 				source_list = ['video']
-				path = '/video/'
+				path = ENV['DEBUG'] == '1' ? (Dir.pwd + '/video') : '/video/'
 
 				# Enumerate our configuration file and see what we have.
 				# These are immutable throwaway objects. 
