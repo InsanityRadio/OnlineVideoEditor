@@ -72,8 +72,14 @@ module OVE
 
 				return Time.now.to_i if _chunks.length == 0
 
-
 				chunk = get_chunk(_chunks[-1])
+				offset = target.chunk_id - chunk.chunk_id
+
+				# ~100 minutes.
+				if offset >= 0 && offset < 1200
+					return chunk.gid + offset
+				end
+
 				return chunk.gid + 1
 
 			end

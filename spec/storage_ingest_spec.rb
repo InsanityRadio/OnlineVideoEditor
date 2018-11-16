@@ -126,17 +126,20 @@ end
 			# Store first 2 chunks
 			manifest.chunks[0..1].each { |c| @storage.store_chunk c }
 
-			@storage.store_chunk manifest.chunks[6]
+			@storage.store_chunk manifest.chunks[5]
 
 			redis_chunks = @storage.chunks
 			redis_full_chunks = redis_chunks.map { |path| @storage.get_chunk path }
 
+			# Are we in a good place? Sanity check the env.
 			expect(redis_chunks.length).to eq(3)
 
 			first_gid = redis_full_chunks[0].gid
 
 			expect(redis_full_chunks[1].gid).to eq(first_gid + 1)
 
+			# The last secret chunk we added should result in a gap of 3 places in our storage engine
+			# We can't know if these exist or not, so assume they do not exist (downtime, etc)
 			expect(redis_full_chunks[2].gid).to eq(first_gid + 5)
 
 		end
