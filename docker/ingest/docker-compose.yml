@@ -6,9 +6,18 @@ services:
       context: .
       dockerfile: ./Dockerfile.capture
     environment:
-      http_proxy: 
+      - http_proxy
 #      PULL_URL: rtmp://10.32.0.222:1935/falcon/video
     volumes: 
+      - video:/video
+
+  http:
+    build:
+      context: ../..
+      dockerfile: ./docker/ingest/Dockerfile.http
+    environment:
+      - http_proxy
+    volumes:
       - video:/video
 
   ffmpeg:
@@ -17,8 +26,8 @@ services:
     volumes:
       - ./dummy.ts:/video.ts
 
+  redis:
+    image: redis/redis
 
 volumes:
   video: 
-      
-

@@ -48,6 +48,13 @@ module OVE
 			# 
 			get '/preview?start_time=:start_time&end_time=:end_time' do | start_time, end_time |
 
+				# 1. get list of HLS chunks between start & end
+
+				# 2. find the unique ID of each chunk
+
+				# 3. Set the discontinuity to this ID
+
+				# 4. Send a m3u8 file with that stuff
 
 
 			end
