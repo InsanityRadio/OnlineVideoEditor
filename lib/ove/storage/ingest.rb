@@ -6,12 +6,15 @@ module OVE
 			# Store the given OVE::HLS::Chunk in our persistent storage, giving it a unique ID
 			def store_chunk chunk, chunk_gid = 0
 
+				# Chunks never mutate. If they do, the behaviour is undefined. 
+				return if get_chunk(chunk.path) != false
+
 				if chunk_gid == 0
 					chunk_gid = find_gid_for_chunk(chunk)
 				end
 
 				redis.rpush 'ingest', chunk.path
-				redis.hmset 'ingest:' + chunk.path, 'gid', chunk_gid, 'chunk_id', chunk.chunk_id, 'length', chunk.length
+				redis.hmset 'ingest:' + chunk.path, 'gid', chunk_gid, 'chunk_id', chunk.chunk_id, 'length', chunk.length, 'start_time', chunk.start_time
 
 			end
 
@@ -34,7 +37,7 @@ module OVE
 
 				data = redis.hgetall 'ingest:' + chunk_path
 
-				return false if data == nil
+				return false if data == nil || data.empty?
 
 				OVE::HLS::Chunk.new nil, data['chunk_id'].to_i, data['length'].to_f, chunk_path, data['gid'].to_i
 

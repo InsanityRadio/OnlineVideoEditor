@@ -3,7 +3,7 @@ module OVE
 		# This class oversees the reading and generation of HLS manifest files
 		class Chunk
 
-			attr_reader :manifest, :chunk_id, :length, :path
+			attr_reader :manifest, :chunk_id, :length, :start_time, :path
 			attr_accessor :gid
 
 			def initialize manifest, chunk_id, length, path, gid = nil
@@ -11,6 +11,7 @@ module OVE
 				@manifest = manifest
 				@chunk_id = chunk_id
 				@length = length
+				@start_time = -1
 				@path = path
 
 				# GID = guaranteed unique chunk ID for this HLS file

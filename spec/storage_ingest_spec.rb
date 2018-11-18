@@ -3,7 +3,7 @@ require_relative 'spec_helper'
 
 describe OVE::Storage::Ingest do 
 
-	class FakeStorage < OVE::Storage::Ingest
+	class MemoryStorage < OVE::Storage::Ingest
 
 		def initialize
 			# Override the namespace stuff for now as it's not necessary in-memory.
@@ -17,13 +17,13 @@ describe OVE::Storage::Ingest do
 		@storage = nil
 
 		before(:each) do 
-			@storage = FakeStorage.new
+			@storage = MemoryStorage.new
 		end
 
 		after(:each) do
 
 			# Wipe Redis to ensure we have a clean test slate
-			Redis.new.flushall
+			Redis.new.flushdb
 			@storage = nil
 
 		end
@@ -39,7 +39,7 @@ describe OVE::Storage::Ingest do
 #EXTINF:5.108,
 2.9621.ts
 end
-
+	
 			manifest = OVE::HLS::Manifest.from dummy_hls
 			chunks = manifest.chunks
 			@storage.store_chunk chunks[0]
@@ -49,6 +49,9 @@ end
 			expect(redis_chunks.length).to eq(1)
 
 			redis_chunk = @storage.get_chunk redis_chunks[0]
+			expect(redis_chunk.length).to eq(5.108)
+			expect(redis_chunk.path).to eq('2.9621.ts')
+			expect(redis_chunk.chunk_id).to eq(9621)
 
 		end
 
