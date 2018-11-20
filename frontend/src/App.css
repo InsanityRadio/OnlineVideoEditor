@@ -14,7 +14,11 @@
 }
 
 .video-container {
+	background: #333;
 	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	height: 100%;
 }
 
@@ -31,13 +35,57 @@
 	flex-basis: 400px;
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
-	padding: 10px;
 	background: #222;
 	color: #FFF;
+}
+
+.side-content {
+	padding: 10px;
 }
 
 
 .timeline-canvas {
 	width: 100%;
 	height: 200px;
+}
+
+.video-preview-square {
+	width: 512px;
+	height: 512px;
+	position: relative;
+	background: #000;
+	box-shadow: 0px 0px 30px #000;
+}
+
+.video-preview-square canvas, .video-preview-square video {
+	width: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+}
+
+.video-preview-square .layer-0 {
+	z-index: 0;
+}
+
+.video-preview-square .layer-1 {
+	z-index: 1;
+}
+
+.video-preview-square .layer-2 {
+	z-index: 2;
+}
+
+.video-preview-square .layer-3 {
+	z-index: 3;
+}
+
+.label-hint {
+	margin-bottom: 10px;
+	font-size: 8pt;
+}
+
+.side-title {
+	margin: 30px 0 10px;
 }
