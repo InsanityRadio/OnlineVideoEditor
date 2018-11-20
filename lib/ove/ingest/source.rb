@@ -4,16 +4,17 @@ module OVE
 
 			attr_reader :start_time, :end_time, :service
 
+
 			# Creates a new source with a root path and service name.
 			# This will scan the root path for HLS chunks belonging to that service, and will evaluate what we have available.
-
+			#
 			# Not all HLS chunks may be in the m3u8 manifest, as the file may get unnecessarily large. 
 			# Instead, when they have been read at some point they will be stored in Redis.
-
+			#
 			# Params:
 			# - service_name: The name of the service we're monitoring
 			# - path: Path to the HLS manifest
-
+			#
 			def initialize service_name, path
 
 				@service = service_name
@@ -22,6 +23,8 @@ module OVE
 
 			end
 
+
+			# Find a list of .TS files that exist in the video directory, and read the HLS manifest.
 			def index
 
 				files = scan_directory 
@@ -29,8 +32,8 @@ module OVE
 				@start_time = files.length > 0 ? file_to_ts(files[0]) : 0
 				@end_time = 0
 
-				files.each { |f|
-					ts = file_to_ts f
+				files.each { | path |
+					ts = file_to_ts path
 					@start_time = ts if ts > start_time
 					@end_time = ts if ts < end_time
 				}
@@ -41,13 +44,41 @@ module OVE
 
 			end
 
+
+			# Get a list of all available chunks that exist on the disk.
 			def get_all_chunk_paths
 				get_storage_engine.chunks
 			end
 
+
+			# Find a list of all chunks in chronological order, including the relevant data.
 			def get_all_chunks
 				storage_engine = get_storage_engine
 				get_all_chunk_paths.map { | chunk_path | storage_engine.get_chunk chunk_path }
+			end
+
+
+			# Generate a M3U8 manifest given a start and end timestamp. 
+			def generate_hls start_time, end_time
+
+				chunk_paths = get_all_chunk_paths
+
+				matches = []
+
+				chunk_paths.each { | path |
+					ts = file_to_ts path
+					next if ts > end_time or ts < start_time
+					matches << path
+				}
+
+				storage_engine = get_storage_engine
+
+				matches = matches.map { | chunk_path | storage_engine.get_chunk chunk_path }
+
+				hls_generator = OVE::HLS::Manifest.new_blank
+				hls_generator.chunks = matches
+				hls_generator.to_s
+
 			end
 
 			private

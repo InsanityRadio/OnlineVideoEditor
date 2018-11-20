@@ -13,6 +13,8 @@ module OVE
 					chunk_gid = find_gid_for_chunk(chunk)
 				end
 
+				chunk.gid = chunk_gid
+
 				redis.rpush 'ingest', chunk.path
 				redis.hmset 'ingest:' + chunk.path, 'gid', chunk_gid, 'chunk_id', chunk.chunk_id, 'length', chunk.length, 'start_time', chunk.start_time
 

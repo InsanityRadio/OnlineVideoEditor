@@ -15,7 +15,6 @@ module OVE
 
 				# Enumerate our configuration file and see what we have.
 				# These are immutable throwaway objects. 
-
 				source_list.map {|s| Source.new(s, path)}
 
 			end

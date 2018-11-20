@@ -166,6 +166,41 @@ describe OVE::Ingest::Source do
 
 		end
 
+		it 'generates HLS' do
+
+			manifest = FakeManifest.new
+			manifest.chunks = [
+				OVE::HLS::Chunk.new(manifest, 1, 5.0, 'dummy-0.ts', nil),
+				OVE::HLS::Chunk.new(manifest, 2, 5.0, 'dummy-5.ts', nil),
+				OVE::HLS::Chunk.new(manifest, 3, 5.0, 'dummy-10.ts', nil),
+				OVE::HLS::Chunk.new(manifest, 4, 5.0, 'dummy-15.ts', nil),
+				OVE::HLS::Chunk.new(manifest, 5, 5.0, 'dummy-20.ts', nil)
+			]
+
+			@source._test_manifest = manifest
+			@source._test_file_list = [
+				'dummy-0.ts',
+				'dummy-5.ts',
+				'dummy-10.ts',
+				'dummy-15.ts',
+				'dummy-20.ts'
+			]
+
+			@source.index
+
+			manifest_str = @source.generate_hls 0, 999
+
+			manifest_comp = OVE::HLS::Manifest.from manifest_str
+
+			expect(manifest_comp.media_sequence).to eq(manifest.chunks[0].gid)
+
+			chunks = manifest.chunks
+
+			expect(chunks.length).to eq(5)
+			expect(chunks[0].path).to eq('dummy-0.ts')
+
+		end
+
 	end
 
 end

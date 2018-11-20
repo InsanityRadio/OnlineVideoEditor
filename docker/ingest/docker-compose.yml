@@ -17,8 +17,16 @@ services:
       dockerfile: ./docker/ingest/Dockerfile.http
     environment:
       - http_proxy
+      - SERVICE=video
     volumes:
       - video:/video
+
+  nginx:
+    image: nginx
+    ports:
+      - '1965:80'
+    volumes:
+      - ./nginx_dist.conf:/etc/nginx/nginx.conf
 
   ffmpeg:
     image: jrottenberg/ffmpeg

@@ -25,13 +25,13 @@ module OVE
 
 				session[:csrf_token] ||= SecureRandom.hex
 
-				my_services = OVE::Ingest::SourceProvider.instance.get_sources
+				my_sources = OVE::Ingest::SourceProvider.instance.get_sources
 
 				send_json(
 
 					csrf_token: session[:csrf_token],
 
-					services: my_services.map { |s| 
+					services: my_sources.map { |s| 
 
 						{
 							service: s.service,
@@ -46,7 +46,10 @@ module OVE
 			end
 
 			# 
-			get '/preview?start_time=:start_time&end_time=:end_time' do | start_time, end_time |
+			get '/:service/preview.m3u8' do | service |
+
+				start_time = params['start_time'].to_i
+				end_time = params['end_time'].to_i
 
 				# 1. get list of HLS chunks between start & end
 
@@ -56,6 +59,15 @@ module OVE
 
 				# 4. Send a m3u8 file with that stuff
 
+				my_sources = OVE::Ingest::SourceProvider.instance.get_sources
+
+				source = my_sources.find { | s | s.service == service }
+
+				halt 404 if !service 
+
+				content_type 'application/x-mpegURL'
+
+				source.generate_hls start_time, end_time
 
 			end
 
