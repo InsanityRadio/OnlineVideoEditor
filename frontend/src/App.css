@@ -17,6 +17,7 @@
 	background: #333;
 	flex: 1;
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	height: 100%;
@@ -57,7 +58,7 @@
 	box-shadow: 0px 0px 30px #000;
 }
 
-.video-preview-square canvas, .video-preview-square video {
+.video-preview-square canvas, .video-layer {
 	width: 100%;
 	position: absolute;
 	top: 0;
@@ -81,6 +82,10 @@
 	z-index: 3;
 }
 
+.video-preview-square .layer-4 {
+	z-index: 4;
+}
+
 .label-hint {
 	margin-bottom: 10px;
 	font-size: 8pt;
@@ -88,4 +93,18 @@
 
 .side-title {
 	margin: 30px 0 10px;
+}
+
+.video-layer video {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.video-layer-stretch {
+}
+
+.video-layer-stretch video {
+	object-fit: cover;
+	width: 100%;
 }

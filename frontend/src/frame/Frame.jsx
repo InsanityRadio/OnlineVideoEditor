@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 
 import TimelineComponent from '../components/Timeline';
 
+import Video from '../components/Video';
+
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 
@@ -35,13 +37,15 @@ class Frame extends Component {
 	themeConfig = {
 		text: {
 			line1: {
-				x: 350,
+				x: (state) => state['layers.logo'] ? 350 : 512,
 				y: 155,
-				w: 600,
+				w: (state) => state['layers.logo'] ? 600 : 915,
 				h: 125,
 				maxFont: 80,
-				wrap: false,
-				textAlign: 'start',
+				wrap: {
+					minFont: 40
+				},
+				textAlign: (state) => state['layers.logo'] ? 'start' : 'middle',
 				textBaseline: 'middle'
 			},
 			line2: {
@@ -61,6 +65,14 @@ class Frame extends Component {
 
 	canva = {};
 
+	state = {
+		'line1': '',
+		'line2': '',
+		'layers.logo': true,
+		'layers.background': false,
+		'layers.foreground': true,
+	}
+
 	componentWillMount () {
 	}
 
@@ -74,22 +86,54 @@ class Frame extends Component {
 
 		canvas.width = canvas.height = 1024;
 
+		if (layer == 'text') {
+			this.rerender();
+			return;
+		}
+
 		var image = new Image();
 		image.onload = () => {
 			canvas.getContext('2d').drawImage(image, 0, 0, 1024, 1024);
-
-			if (layer == 'logo') {
-				this.drawText(this.themeConfig.text.line2, 'wrap text wrap text wrap text wrap text wrap text wrap text wrap text wrap text wrap text wrap text');
-			}
 		}
 
 		image.src = '/frames/demo/' + layer + '.png';
 
 	}
 
+	clearText () {
+		let canvas = this.canva['text'];
+		let context = canvas.getContext('2d');
+		context.clearRect(0, 0, canvas.width, canvas.height);
+
+	}
+
+	/**
+	 * Evaluates the configuration given the current state. Useful for dynamic width/heights
+	 */
+	evaluateConfig (config) {
+
+		let newConfig = Object.assign({}, config);
+
+		for (var i in newConfig) {
+			if (typeof newConfig[i] == 'function') {
+				newConfig[i] = newConfig[i](this.state);
+			}
+		}
+
+		return newConfig;
+
+	}
+
+	/**
+	 * Draws the given line of text.
+	 */
 	drawText (config, line) {
 
-		let context = this.canva['logo'].getContext('2d');
+		config = this.evaluateConfig(config);
+		let context = this.canva['text'].getContext('2d');
+
+		console.log('NEW CONFIG', config)
+
 		context.fillStyle = 'white';
 		context.textAlign = config.textAlign;
 		context.textBaseline = config.textBaseline;
@@ -141,6 +185,65 @@ class Frame extends Component {
 
 	}
 
+	onChange(control, modifier, event) {
+
+		let value = (event.target.type == 'checkbox') ? event.target.checked : event.target.value;
+
+		if (modifier != null) {
+			value = modifier(value);
+		}
+
+		this.setState({
+			[control]: value
+		}, () => this.rerender());
+
+	}
+
+	rerender () {
+		this.clearText();
+		this.drawText(this.themeConfig.text.line1, this.state.line1);
+		this.drawText(this.themeConfig.text.line2, this.state.line2);
+	}
+
+	getStyleForLayer (layer) {
+
+		if (typeof this.state['layers.' + layer] != 'undefined') {
+			return this.state['layers.' + layer] ? {} : { display: 'none'}
+		}
+
+		return {};
+
+	}
+
+	exportData () {
+
+		let background = this.mergeLayers(['background']);
+		let foreground = this.mergeLayers(['text', 'logo', 'foreground']);
+
+		// POST bg, fg to backend
+
+	}
+
+	mergeLayers (layers) {
+
+		let canvas = document.createElement('canvas');
+		canvas.width = canvas.height = this.canva[layers[0]].width;
+		let context = canvas.getContext('2d');
+
+		for (var i = 0; i < layers.length; i++) {
+			context.drawImage(this.canva[layers[i]], 0, 0);
+		}
+
+		return canvas.toDataURL();
+	}
+
+	setVideo (video) {
+		if (this.video) {
+			return false;
+		}
+		this.video = video;
+	}
+
 	render () {
 		return (
 
@@ -150,13 +253,17 @@ class Frame extends Component {
 
 					<div class="video-preview-square">
 
-						<canvas ref={ (r) => this.setLayer(r, 'background') } className="layer-0" />
-						<video className="layer-1" src="/video/test.mp4" />
-						<canvas ref={ (r) => this.setLayer(r, 'logo') } className="layer-2" />
-						<canvas ref={ (r) => this.setLayer(r, 'foreground') } className="layer-3" />
+						<canvas ref={ (r) => this.setLayer(r, 'background') } className="layer-0" style={ this.getStyleForLayer('background') } />
+						<div className={ this.state['layers.background'] ? "layer-1 video-layer" : "layer-1 video-layer video-layer-stretch"} >
+							<Video ref={ (v) => this.setVideo(v) } src="/video/test.mp4" style={ this.getStyleForLayer('video') } />
+						</div>
+						<canvas ref={ (r) => this.setLayer(r, 'text') } className="layer-2" style={ this.getStyleForLayer('text') } />
+						<canvas ref={ (r) => this.setLayer(r, 'logo') } className="layer-3" style={ this.getStyleForLayer('logo') } />
+						<canvas ref={ (r) => this.setLayer(r, 'foreground') } className="layer-4" style={ this.getStyleForLayer('foreground') } />
 
 					</div>
 
+					Test
 
 				</div>
 
@@ -178,15 +285,33 @@ class Frame extends Component {
 
 							<FormControlLabel control={<Checkbox checked={ true } value="checkedC" />} label="Enable Frame" />
 
+							<br />
+
+							<FormControlLabel
+								control={<Checkbox checked={ this.state['layers.logo'] }
+								onChange={ this.onChange.bind(this, 'layers.logo', null) }
+								value="true" />} label="Show Logo" />
+
 							<h2 class="side-title">Text Settings</h2>
 
-							<TextField label="Show Title Text (Top Line)" style={{ width: '100%'}} />
+							<TextField
+								value={ this.state.line1 }
+								onChange={ this.onChange.bind(this, 'line1', null) }
+								label="Show Title Text (Top Line)"
+								style={{ width: '100%'}} />
 
-							<TextField label="Segment Title Text (Bottom Line)" style={{ width: '100%'}} />
+							<TextField
+								value={ this.state.line2 }
+								onChange={ this.onChange.bind(this, 'line2', null) }
+								label="Segment Title Text (Bottom Line)"
+								style={{ width: '100%'}} />
 
 							<h2 class="side-title">Frame Settings</h2>
 
-							<FormControlLabel control={<Checkbox checked={ true } value="checkedC" />} label="Foreground Graphics" />
+							<FormControlLabel
+								control={<Checkbox checked={ this.state['layers.foreground'] }
+								onChange={ this.onChange.bind(this, 'layers.foreground', null) }
+								value="true" />} label="Foreground Graphics" />
 							<Button color="secondary">
 								Browse
 							</Button>
@@ -194,18 +319,25 @@ class Frame extends Component {
 
 							<p class="label-hint">(Check me to enable the graphics in the theme that can overlap the video)</p>
 
-							<RadioGroup name="video-style" value="true">
+							<RadioGroup
+								onChange={ this.onChange.bind(this, 'layers.background', (value) => value == 'true')}
+								value={ this.state['layers.background'] }>
 
-								<FormControlLabel control={ <Radio color="primary" />} label={ <div>Background Graphic&nbsp;&nbsp;<Button color="secondary">
-									Browse
-								</Button>
-</div> } value="true" />
-							<p class="label-hint"></p>
+								<FormControlLabel control={ <Radio color="primary" /> } label={ <div>Background Graphic&nbsp;&nbsp;
+									<Button color="secondary">
+										Browse
+									</Button>
+								</div> } value={ true } />
 
+								<p class="label-hint"></p>
 
-								<FormControlLabel control={ <Radio color="primary" />} label="Fit To Screen" value="false" />
+								<FormControlLabel control={ <Radio color="primary" /> } label="Fit To Screen" value={ false } />
 
 							</RadioGroup>
+
+							<Button variant="outlined" color="secondary">
+								Render
+							</Button>
 
 						</div>
 
