@@ -12,7 +12,7 @@ module OVE
 
 			def initialize
 
-				@raw_redis = Redis.new reconnect_attempts: 99999
+				@raw_redis = Redis.new reconnect_attempts: 99999, url: ENV['REDIS']
 				@redis = Redis::Namespace.new :ove, :redis => @raw_redis
 
 			end

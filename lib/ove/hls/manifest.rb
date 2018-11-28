@@ -48,8 +48,8 @@ module OVE
 			end
 
 			def start_date
-				return -1 if @chunks.length == 0
-				Time.at @chunks[0].get_time
+				return Time.at(-1) if @chunks.length == 0
+				Time.at @chunks[0].get_time / 1000.0
 			end
 
 			def to_s

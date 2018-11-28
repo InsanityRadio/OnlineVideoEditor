@@ -16,5 +16,5 @@ RUN gem install --http-proxy http://10.32.1.1:3128 bundler && bundle install --j
 
 COPY . ./
 
-CMD ["rackup", "-o", "0.0.0.0", "-p", "80", "run_ingest.rb"]
+CMD ["ruby", "run_ingest_index.rb"]
 

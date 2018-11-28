@@ -122,7 +122,7 @@ module OVE
 			end
 
 			def scan_directory
-				DirectoryScanner.new.scan @root, @service
+				DirectoryScanner.new(@root, @service).scan
 			end
 
 			def get_hls_manifest

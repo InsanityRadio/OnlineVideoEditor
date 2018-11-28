@@ -35,8 +35,8 @@ module OVE
 
 						{
 							service: s.service,
-							start_time: s.start_time,
-							end_time: s.end_time
+							start_time: s.start_time / 1000.0,
+							end_time: s.end_time / 1000.0
 						}
 
 					}
@@ -64,7 +64,7 @@ module OVE
 
 				content_type 'application/x-mpegURL'
 
-				source.generate_hls start_time, end_time
+				source.generate_hls start_time * 1000.0, end_time * 1000.0
 
 			end
 

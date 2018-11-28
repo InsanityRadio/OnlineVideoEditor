@@ -7,7 +7,8 @@ services:
       dockerfile: ./Dockerfile.capture
     environment:
       - http_proxy
-#      PULL_URL: rtmp://10.32.0.222:1935/falcon/video
+      - PULL_URL=rtmp://10.32.0.222:1935/falcon/video
+
     volumes: 
       - video:/video
 
@@ -18,24 +19,39 @@ services:
     environment:
       - http_proxy
       - SERVICE=video
+      - DEBUG=1
+      - REDIS=redis://redis:6379
+    volumes:
+      - video:/video
+  index:
+    build:
+      context: ../..
+      dockerfile: ./docker/ingest/Dockerfile.index
+    environment:
+      - http_proxy
+      - SERVICE=video
+      - REDIS=redis://redis:6379
     volumes:
       - video:/video
 
   nginx:
     image: nginx
+    depends_on:
+      - http
     ports:
       - '1965:80'
     volumes:
       - ./nginx_dist.conf:/etc/nginx/nginx.conf
+      - video:/video
 
-  ffmpeg:
-    image: jrottenberg/ffmpeg
-    command: -re -stream_loop -1 -i /video.ts -c:v copy -c:a copy -bsf:a aac_adtstoasc -f flv rtmp://capture/video/video
-    volumes:
-      - ./dummy.ts:/video.ts
+#  ffmpeg:
+#    image: jrottenberg/ffmpeg
+#    command: -re -stream_loop -1 -i /video.ts -c:v copy -c:a copy -bsf:a aac_adtstoasc -f flv rtmp://capture/video/video
+#    volumes:
+#      - ./dummy.ts:/video.ts
 
   redis:
-    image: redis/redis
+    image: redis
 
 volumes:
   video: 
