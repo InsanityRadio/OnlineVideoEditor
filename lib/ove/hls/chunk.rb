@@ -19,6 +19,10 @@ module OVE
 
 			end
 
+			def get_time
+				@path.split('-')[1].split('.')[0].to_i rescue -1
+			end
+
 			def resolve_to_path
 			end
 

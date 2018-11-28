@@ -13,6 +13,7 @@ module OVE
 					data << "#EXT-X-VERSION:3\n"
 					data << "#EXT-X-MEDIA-SEQUENCE:#{@manifest.media_sequence}\n"
 					data << "#EXT-X-TARGETDURATION:#{@manifest.target_duration}\n"
+					data << "#EXT-X-PROGRAM-DATE-TIME:#{@manifest.start_date.iso8601}"
 
 					@manifest.chunks.each { | chunk |
 						data << "#EXTINF:#{chunk.length.to_f}\n"

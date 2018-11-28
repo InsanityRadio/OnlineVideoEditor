@@ -52,11 +52,8 @@ module OVE
 				end_time = params['end_time'].to_i
 
 				# 1. get list of HLS chunks between start & end
-
 				# 2. find the unique ID of each chunk
-
 				# 3. Set the discontinuity to this ID
-
 				# 4. Send a m3u8 file with that stuff
 
 				my_sources = OVE::Ingest::SourceProvider.instance.get_sources

@@ -47,6 +47,11 @@ module OVE
 				@chunks = new_chunks
 			end
 
+			def start_date
+				return -1 if @chunks.length == 0
+				Time.at @chunks[0].get_time
+			end
+
 			def to_s
 				ManifestGenerator.new(self).to_s
 			end
