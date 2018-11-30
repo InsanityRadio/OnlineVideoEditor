@@ -22,16 +22,19 @@ module OVE
 
 						next prev if line.strip == ''
 
+						val_f = val.to_f
+						val_i = val.to_i
+
 						# #EXTINF:length is always followed by a path.
-						next val.to_f if key == '#EXTINF'
+						next val_f if key == '#EXTINF'
 						if key[0] != '#'
 							add_chunk prev, line, offset
 							offset += 1
 						end
 
-						@version = val.to_i if key == '#EXT-X-VERSION'
-						@media_sequence = val.to_i if key == '#EXT-X-MEDIA-SEQUENCE'
-						@target_duration = val.to_f if key == '#EXT-X-TARGETDURATION'
+						@version = val_i if key == '#EXT-X-VERSION'
+						@media_sequence = val_i if key == '#EXT-X-MEDIA-SEQUENCE'
+						@target_duration = val_f if key == '#EXT-X-TARGETDURATION'
 					end
 				end
 				# rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity

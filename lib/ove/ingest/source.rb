@@ -19,6 +19,7 @@ module OVE
 				@service = service_name
 				@hls_path = path
 				@root = File.dirname(path)
+				@files = []
 			end
 
 			# Find a list of .TS files that exist in the video directory, and read the HLS manifest.
@@ -100,7 +101,7 @@ module OVE
 
 			def scan_directory
 				files = DirectoryScanner.new(@root, @service).scan
-				@files = files.map { |f| File.basename f }
+				@files = files.map { |file| File.basename file }
 			end
 
 			def hls_manifest

@@ -16,8 +16,6 @@ module OVE
 			end
 
 			def gid=(my_gid)
-				raise 'Cannot change GID of a chunK!' unless @gid.nil?
-
 				@gid = my_gid
 			end
 
