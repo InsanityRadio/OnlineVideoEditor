@@ -1,6 +1,5 @@
 #!/bin/env ruby
-$: << 'lib'
+$LOAD_PATH << 'lib'
 
 require 'rack'
 require 'ove'
-

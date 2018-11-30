@@ -1,5 +1,6 @@
-$: << './'
+$LOAD_PATH << './'
 
+# Defines the main project namespace
 module OVE
 end
 

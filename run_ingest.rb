@@ -1,24 +1,16 @@
 #!/bin/env ruby
-$: << 'lib'
+$LOAD_PATH << 'lib'
 
 require 'rack'
 require 'ove'
 
+# This 'picks' the services that we want to expose/enable
 class Application < Sinatra::Application
-
 	use OVE::Service::Ingest
-
-	if ENV['DEBUG'] == '1'
-		use OVE::Service::Ingest::Test
-	end
-
+	use OVE::Service::Ingest::Test if ENV['DEBUG'] == '1'
 end
 
 RunIngest = Rack::Builder.new do
-
-	app = Application.new 
-
+	app = Application.new
 	run app
-
 end.to_app
-
