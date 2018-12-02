@@ -1,4 +1,5 @@
 module OVE
+	# This module encapsulates all of the functionality of the ingest system.
 	module Ingest
 	end
 end

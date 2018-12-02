@@ -1,4 +1,5 @@
 module OVE
+	# Encapsulates all (key-value) storage systems
 	module Storage
 	end
 end

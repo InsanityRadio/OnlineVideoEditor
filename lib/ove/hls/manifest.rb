@@ -2,27 +2,25 @@ module OVE
 	module HLS
 		# This class oversees the reading and generation of HLS manifest files
 		class Manifest
-
-			def self.from data_string
-				self.new data_string
+			def self.from(data_string)
+				new data_string
 			end
 
-			def self.from_file file
-				self.from File.read(file)
+			def self.from_file(file)
+				from File.read(file)
 			end
 
 			def self.new_blank
-				self.new
+				new
 			end
 
 			attr_reader :text
 			attr_reader :target_duration, :version, :media_sequence, :chunks
 
-			def initialize data_string = nil
-
+			def initialize(data_string = nil)
 				@text = data_string
 
-				if data_string != nil
+				if !data_string
 					initialize_with_data_string
 				else
 					@chunks = []
@@ -30,7 +28,6 @@ module OVE
 					@version = 3
 					@media_sequence = -1
 				end
-
 			end
 
 			def initialize_with_data_string
@@ -42,20 +39,24 @@ module OVE
 				@media_sequence = parser.media_sequence
 			end
 
-			def chunks= new_chunks
-				@media_sequence = new_chunks[0].gid rescue -1
+			def chunks=(new_chunks)
+				begin
+					@media_sequence = new_chunks[0].gid
+				rescue StandardError
+					@media_sequence = -1
+				end
 				@chunks = new_chunks
 			end
 
 			def start_date
-				return Time.at(-1) if @chunks.length == 0
-				Time.at @chunks[0].get_time / 1000.0
+				return Time.at(-1) if @chunks.empty?
+
+				Time.at @chunks[0].time / 1000.0
 			end
 
 			def to_s
 				ManifestGenerator.new(self).to_s
 			end
-
 		end
 	end
 end

@@ -1,11 +1,8 @@
 require_relative 'spec_helper'
 
-describe OVE::HLS::Manifest do 
-
+describe OVE::HLS::Manifest do
 	context 'when given an HLS manifest' do
-
 		it 'can correctly split it into chunks' do
-
 			dummy_hls = <<end
 #EXTM3U
 #EXT-X-VERSION:3
@@ -40,11 +37,9 @@ end
 
 			found = chunks.find_by_name('2.9621.ts')
 			expect(found).not_to be_nil
-
 		end
 
 		it 'can correctly generate a HLS manifest' do
-
 			dummy_hls = <<end
 #EXTM3U
 #EXT-X-VERSION:3
@@ -79,10 +74,6 @@ end
 			expect(chunks[0].path).to eq('2.9621.ts')
 			expect(chunks[0].length).to eq(5.108)
 			expect(chunks[5].chunk_id).to eq(9626)
-
-
 		end
-
 	end
-
 end
