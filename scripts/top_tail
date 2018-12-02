@@ -1,0 +1,54 @@
+#!/bin/bash
+
+if [ "$#" -ne 5 ]; then
+	echo "Usage: $0 video.ts:offset:offset intro.ts intro.wav extro.ts extro.wav output.ts"
+	echo "(where offsets are the time to cut from the start and end of the video to compensate for spill)"
+	exit 1
+fi
+
+# Split the video into an array, and add default arguments to the end. We use these to calculate video times
+VIDEO="$VIDEO:0:0"
+VIDEO=(${VIDEO//:/ })
+
+INTRO_VIDEO=$2
+INTRO_AUDIO=$3
+EXTRO_VIDEO=$4
+EXTRO_AUDIO=$5
+
+AUDIO_TMP=${VIDEO[0]}_.wav
+VIDEO_TMP=${VIDEO[0]}_.ts
+
+# Work out the offset when the video should play, based on the length of the intro video (not audio).
+# This allows us to "tail" the audio so it sounds more transparent to the viewer
+INTRO_CUE_S=`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$INTRO_VIDEO"`
+INTRO_CUE_MS=`echo $INTRO_CUE_S \* 1000 | bc -l`
+
+# Find the length of the video, both in full, and with the start/end trims considered
+VIDEO_FULL_LENGTH_S=`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${VIDEO[0]}"`
+VIDEO_LENGTH_S=`echo $VIDEO_FULL_LENGTH_S - ${VIDEO[1]} - ${VIDEO[2]}`
+
+# Add the intro cue point to this to work out when we should start the extro
+EXTRO_CUE_S=`echo $INTRO_CUE_S + $VIDEO_LENGTH_S | bc -l`
+EXTRO_CUE_MS=`echo $EXTRO_CUE_S \* 1000 | bc -l`
+
+
+echo "Intro cue is $INTRO_CUE_S"
+echo "Extro cue is $EXTRO_CUE_S"
+
+# Generate the audio track by:
+#  1. Adding silence to the end of INTRO_CUE to prevent it getting cut off
+#  2. Delaying VIDEO[_AUDIO] by INTRO_CUE
+#  3. Mixing delayed INTRO_AUDIO, then VIDEO[_AUDIO] 
+
+ffmpeg -y -i "$INTRO_AUDIO" -i "${VIDEO[0]}" -i "$EXTRO_AUDIO" -filter_complex \
+		"[1:a]adelay=${INTRO_CUE_MS}|${INTRO_CUE_MS}[video];
+		 [2:a]adelay=${EXTRO_CUE_MS}|${EXTRO_CUE_MS}[extro];
+		 [0:a][video][extro]amix=3:duration=longest[a]" \
+	 -map "[a]" "$AUDIO_TMP"
+
+# Now do the same thing with video! These need the same resolution, but everything else is ok
+ffmpeg -y -i "${VIDEO[0]}" -i "$INTRO_VIDEO" -i "$EXTRO_VIDEO" -i "$AUDIO_TMP" -filter_complex \
+		"[1:v][0:v][2:v]concat=n=3:v=1[v]" \
+	-map "[v]" -map "3:0" -c:v h264 -b:v 6000k -c:a aac -b:a 256k "$VIDEO_TMP"
+
+rm "$AUDIO_TMP"
