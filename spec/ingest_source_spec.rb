@@ -168,13 +168,11 @@ describe OVE::Ingest::Source do
 			@source.index
 
 			manifest_str = @source.generate_hls 0, 999
-
 			manifest_comp = OVE::HLS::Manifest.from manifest_str
 
 			expect(manifest_comp.media_sequence).to eq(manifest.chunks[0].gid)
 
 			chunks = manifest.chunks
-
 			expect(chunks.length).to eq(5)
 			expect(chunks[0].path).to eq('dummy-0.ts')
 		end

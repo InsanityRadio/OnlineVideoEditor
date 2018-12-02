@@ -50,22 +50,30 @@ module OVE
 
 			# Generate a M3U8 manifest given a start and end timestamp.
 			def generate_hls(start_time, end_time)
-				chunk_paths = all_chunk_paths
-
-				matches = []
-
-				chunk_paths.each do |path|
-					ts = file_to_ts path
-					matches << path if ts <= end_time && ts >= start_time
-				end
-
-				my_storage_engine = storage_engine
-
-				matches = matches.map { |chunk_path| my_storage_engine.find_chunk chunk_path }
+				matches = find_chunks start_time, end_time
 
 				hls_generator = OVE::HLS::Manifest.new_blank
 				hls_generator.chunks = matches
 				hls_generator.to_s
+			end
+
+			# Finds a list of chunks between the given start and end time.
+			def find_chunks(start_time, end_time)
+				chunk_paths = all_chunk_paths
+
+				matches = []
+
+				# The first chunk should appear twice to ensure a valid comparison with less complexity
+				chunk_paths.unshift chunk_paths[0]
+
+				chunk_paths.each_cons(2) do |prev_path,next_path|
+					prev_ts = file_to_ts prev_path
+					next_ts = file_to_ts next_path
+					matches << next_path if prev_ts >= start_time && next_ts <= end_time
+				end
+
+				my_storage_engine = storage_engine
+				matches.map { |chunk_path| my_storage_engine.find_chunk chunk_path }
 			end
 
 			 private

@@ -20,7 +20,7 @@ module OVE
 			def initialize(data_string = nil)
 				@text = data_string
 
-				if !data_string
+				if data_string != nil
 					initialize_with_data_string
 				else
 					@chunks = []
