@@ -1,9 +1,11 @@
 source 'https://rubygems.org'
 
+gem 'fakeredis'
+gem 'mysql2'
 gem 'redis'
 gem 'redis-namespace'
+gem 'reek'
 gem 'rspec'
+gem 'rubocop'
 gem 'sinatra'
 gem 'sinatra-activerecord'
-gem 'mysql2'
-gem 'fakeredis'

@@ -1,4 +1,5 @@
 module OVE
+	# This module contains classes that can handle HLS manifests and chunks at a low level.
 	module HLS
 	end
 end
