@@ -13,6 +13,10 @@ module OVE
 			def redis
 				@raw_redis ||= OVE::Storage::Driver.kv_instance.namespace self.class.to_s
 			end
+
+			def file_system
+				OVE::Storage::Driver.fs_instance '/video'
+			end
 		end
 	end
 end

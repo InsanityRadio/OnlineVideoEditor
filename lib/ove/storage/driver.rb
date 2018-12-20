@@ -50,6 +50,18 @@ module OVE
 					path
 				end
 
+				def store_metadata category, data = {}
+					file = 'data.json'
+					path = resolve(category, file)
+
+					FileUtils.cd(@root) do
+						FileUtils.mkdir_p(category)
+
+						File.write(path, data.to_json)
+					end
+					path
+				end
+
 				# Return the path on disk of the file given its storage key, or nil if it doesn't exist
 				def find_file category, file
 					file_path = @root + '/' + resolve(category, file)
@@ -64,6 +76,18 @@ module OVE
 						FileUtils.remove_entry_secure(path)
 						FileUtils.rmdir(category) if Dir.empty?(category)
 					end
+				end
+
+				# Return a list of files 
+				def find_files category
+					file_path = @root + '/' + resolve(category, '')
+					FileUtils.glob(file_path)
+				end
+
+				# Return the metadata we're storing against this category
+				def find_metadata category
+					file_path = @root + '/' + resolve(category, 'data.json')
+					File.exist?(file_path) ? File.read(file_path) : nil
 				end
 
 				# Deletes an entire category. May be useful for cleaning up.
@@ -86,8 +110,6 @@ module OVE
 						end
 					end
 				end
-
-				 private
 
 				def resolve category, file
 					raise "Invalid category name specified" unless category.match /[a-zA-Z0-9\_\-]+/
