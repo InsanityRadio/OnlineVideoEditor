@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 
 import TimelineComponent from '../components/Timeline';
 
+import Video from '../components/Video';
+
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 
@@ -31,44 +33,83 @@ const styles = theme => ({
 
 class Import extends Component {
 
+	state = {
+		currentTime: 0
+	}
+
 	componentWillMount () {
 
 		let topOfHour = (Date.now() / 1000 | 0); topOfHour = topOfHour - (topOfHour % 3600);
 
 		// Show 5 minutes initially in our window 
-		let topOfHourPlus = topOfHour + 300;
+		let topOfHourPlus = topOfHour + 3600;
 
-		this.start = topOfHour;
+		this.start = topOfHour - 3600*5;
 		this.end = topOfHourPlus;
 
+		setInterval(() => {
+
+			if (!this.video) {
+				return;
+			}
+
+			if (this.video.getTimecode() == 0) {
+				return;
+			}
+
+			this.setState({
+				currentTime: this.video.getTimecode()
+			})
+
+		}, 100);
+
+	}
+
+	setVideo (video) {
+		this.video = video;
+	}
+
+	onTimelineUpdate (timecode) {
+		console.log('time update', timecode)
+		this.video.setTimecode(timecode);
 	}
 
 	render () {
 		return (
 
-			<div class="fullpage">
+			<div className="fullpage">
 
-				<div class="video-container">
+				<div className="video-container">
 
-					<div class="video-player">
-						<video class="video-player-video-element" controls />
+					<div className="video-player fit">
+						<div className="video-player-video-element">
+							<Video
+								ref={ (v) => this.setVideo(v) }
+								hls={ true }
+								src="http://localhost:3000/api/ingest/video/preview.m3u8?start_time=1545354123&end_time=99999999999" />
+						</div>
 					</div>
 
-					<div class="video-controls">
+					<div className="video-controls">
 						PLAY / PAUSE / FORWARD / BACKWARDS 
 					</div>
 
-					<div class="video-timeline">
+					<div className="video-timeline">
 						
-						<TimelineComponent start={this.start} end={this.end} initialOffset={ this.start + 5 } />
+						<TimelineComponent
+							start={this.start}
+							end={this.end}
+							offset={ this.state.currentTime }
+							onChange={ this.onTimelineUpdate.bind(this) }
+							initialOffset={ 0 } />
 
 					</div>
 
 				</div>
 
-				<div class="video-side">
+				<div className="video-side">
 
-					<div class="video-selector">
+					<div className="video-selector">
 
 						<AppBar position="static">
 							<Toolbar>
@@ -79,60 +120,32 @@ class Import extends Component {
 							</Toolbar>
 						</AppBar>
 
-						<h1>Import Wizard.</h1>
+						<div className="side-content">
 
-						<h3>1. Find Content</h3>
+							<h1>Import Wizard.</h1>
 
-						<Button variant="outlined" color="secondary">
-							Search By Time
-						</Button>
+							<h3>1. Find Content</h3>
 
-						<Button variant="outlined" color="secondary">
-							Search By Clip
-						</Button>
+							<Button variant="outlined" color="secondary">
+								Search By Time
+							</Button>
 
-						<br /><br />
-						<hr /><br />
+							<Button variant="outlined" color="secondary">
+								Search By Clip
+							</Button>
 
-						<Button variant="outlined" color="primary">
-							Save For Later
-						</Button>
+							<br /><br />
+							<hr /><br />
 
-						<br /><br />
+							<Button variant="outlined" color="primary">
+								Save For Later
+							</Button>
 
-						<h3>2. Options</h3>
+							<br /><br />
 
-<RadioGroup
-            aria-label="gender"
-            name="gender2"
-            style={{ color: '#FFF' }}
-          >
-            <FormControlLabel
-              value="female"
-              control={<Radio color="primary" />}
-              label="Female"
-              labelPlacement="start"
-            />
-            <FormControlLabel
-              value="male"
-              control={<Radio color="primary" />}
-              label="Male"
-              labelPlacement="start"
-            />
-            <FormControlLabel
-              value="other"
-              control={<Radio color="primary" />}
-              label="Other"
-              labelPlacement="start"
-            />
-            <FormControlLabel
-              value="disabled"
-              disabled
-              control={<Radio />}
-              label="(Disabled option)"
-              labelPlacement="start"
-            />
-          </RadioGroup>
+							<h3>2. Options</h3>
+
+						</div>
 
 					</div>
 

@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
+import { Router, Route, Switch } from 'react-router';
+import { BrowserRouter } from 'react-router-dom';
+
 import logo from './logo.svg';
 
-import ImportComponent from './import/Import';
+import HomeComponent from './home/Home';
 import FrameComponent from './frame/Frame';
+import ImportComponent from './import/Import';
 
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 
@@ -17,11 +21,13 @@ const theme = createMuiTheme({
 class App extends Component {
 	render () {
 		return (
-
-			<MuiThemeProvider theme={theme}>
-				<FrameComponent />
-			</MuiThemeProvider>
-
+			<BrowserRouter>
+				<MuiThemeProvider theme={theme}>
+					<Route path="/" component={ HomeComponent } />
+					<Route path="/import" component={ ImportComponent } />
+					<Route path="/import/:id/edit" component={ FrameComponent } />
+				</MuiThemeProvider>
+			</BrowserRouter>
 		);
 	}
 }

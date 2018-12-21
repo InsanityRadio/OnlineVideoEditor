@@ -14,11 +14,35 @@ class Timeline extends Component {
 
 	shouldComponentUpdate (nextProps, nextState) {
 
+		this.start = nextProps.start;
+		this.end = nextProps.end;
+
+		if (!this.dragging && this.props.offset != nextProps.offset) {
+
+			// Will updating the offset scroll us out of view?
+			let state = this.getCanvasState();
+
+			if (nextProps.offset < state.viewportStart || nextProps.offset > state.viewportStart + state.viewportWidth) {
+				nextState.viewportStart = nextProps.offset - state.viewportWidth / 3;
+			} else {
+				return true;
+			}
+
+			this.setState({
+				cursorPosition: nextProps.offset,
+				viewportStart: nextState.viewportStart
+			})
+
+			return true;
+
+		}
+
 		if (this.viewportStart != nextState.viewportStart) {
 
 			// Force a full re-render if viewportStart changes (i.e. we've either scrolled out of view, etc)
 			// React's state is slow so we copy out of the state object to improve efficiency
 			this.viewportStart = nextState.viewportStart;
+
 			return true;
 
 		}
@@ -33,21 +57,12 @@ class Timeline extends Component {
 		this.start = this.props.start;
 		this.end = this.props.end;
 		this.setState({
-			cursorPosition: this.props.initialOffset,
-			viewportStart: this.props.initialOffset
+			cursorPosition: this.props.offset || this.props.initialOffset,
+			viewportStart: this.props.offset || this.props.initialOffset
 		});
 
-		console.log(this.props.initialOffset)
+		this.viewportStart = this.props.offset || this.props.initialOffset;
 
-		this.viewportStart = this.props.initialOffset;
-
-		/*setInterval( () => {
-
-			this.setState({
-				cursorPosition: this.state.cursorPosition + 0.1
-			})
-
-		}, 100); */
 	}
 
 	setCanvas (c) {
@@ -89,7 +104,6 @@ class Timeline extends Component {
 		this.canvas.getContext('2d').scale(dpr, dpr);
 
 		this.canvasWidth = this.canvas.offsetWidth;
-
 
 	}
 
@@ -172,7 +186,6 @@ class Timeline extends Component {
 		let state = this.getCanvasState();
 
 		if (state.cursorPosition > state.viewportStart + state.viewportWidth) {
-			console.log('full rerender')
 			this.setState({
 				viewportStart: state.cursorPosition - 2
 			})
@@ -194,6 +207,7 @@ class Timeline extends Component {
 	drawPlayhead () {
 
 		let state = this.getCanvasState();
+
 		let posX = (state.cursorPosition - state.viewportStart) * state.unitMap / state.unit;
 
 		this.drawLine(posX, 30, posX, 99);
@@ -238,8 +252,6 @@ class Timeline extends Component {
 
 			this.dragging = true;
 
-			console.log('dragging')
-
 		}
 
 	}
@@ -266,6 +278,7 @@ class Timeline extends Component {
 				cursorPosition: Math.max(Math.min(cursorPosition + velocity, this.end), this.start)
 			}, () => {
 				this.rerender();
+				this.props.onChange && this.props.onChange(this.state.cursorPosition);
 			})
 
 		} else if (mousePosition[0] < 20) {
@@ -277,6 +290,7 @@ class Timeline extends Component {
 				cursorPosition: Math.max(Math.min(cursorPosition - velocity, this.end), this.start)
 			}, () => {
 				this.rerender();
+				this.props.onChange && this.props.onChange(this.state.cursorPosition);
 			})
 
 		} else {
@@ -290,6 +304,7 @@ class Timeline extends Component {
 				cursorPosition: finalCursorPosition
 			}, () => {
 				this.rerender();
+				this.props.onChange && this.props.onChange(this.state.cursorPosition);
 			})
 		}
 
@@ -312,13 +327,14 @@ class Timeline extends Component {
 
 		let finalCursorPosition = (playheadX * state.unit / state.unitMap) + state.viewportStart;
 
-			finalCursorPosition = Math.max(Math.min(finalCursorPosition, this.end), this.start);
+		finalCursorPosition = Math.max(Math.min(finalCursorPosition, this.end), this.start);
 
-		/*this.setState({
+		this.setState({
 			cursorPosition: finalCursorPosition
-		})*/
-
-		console.log('no drags', finalCursorPosition)
+		}, () => {
+			// Invoke the onChange event to allow appropriate action
+			this.props.onChange && this.props.onChange(finalCursorPosition);
+		})
 
 	}
 

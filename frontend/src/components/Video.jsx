@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import moment from 'moment';
 
+import Hls from 'hls.js';
+
 import { withStyles } from '@material-ui/core/styles';
 
 /**
@@ -24,13 +26,12 @@ class Video extends Component {
 
 		this.setSRC();
 
-		/*setInterval( () => {
+		// We can't use web workers with WebPack/create-react-app.
+		this.hls = new Hls({ enableWorker: false });
+		console.log('HLS:', this.hls)
 
-			this.setState({
-				cursorPosition: this.state.cursorPosition + 0.1
-			})
+		this.registerEvents();
 
-		}, 100); */
 	}
 
 	componentDidUpdate (prevProps) {
@@ -38,6 +39,50 @@ class Video extends Component {
 		if (this.props.src != prevProps.src || this.props.hls != this.props.hls) {
 			this.setSRC();
 		}
+
+	}
+
+	registerEvents () {
+
+		this.hls.on(Hls.Events.MANIFEST_PARSED, function () {
+		});
+
+		this.hls.on(Hls.Events.ERROR, (e, data) => {
+			console.warn('HLS error', e, data)
+		})
+
+		this.hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
+			let rawDateTime = data.details.fragments[0].programDateTime;
+
+			this.setState({
+				timecodeBase: rawDateTime
+			});
+		});
+
+		this.hls.on(Hls.Events.FRAG_CHANGED, (event, data) => {
+			this.currentFrag = data.frag;
+		});
+
+	}
+
+	getTimecode () {
+
+		if (!this.state.timecodeBase || !this.video) {
+			return 0;
+		}
+
+		return (this.state.timecodeBase / 1000) + this.video.currentTime;
+
+	}
+
+	setTimecode (timecode) {
+		
+		if (timecode < this.state.timecodeBase / 1000) {
+			console.error('Tried to seek to timecode that isn\'t loaded');
+			return;
+		}
+
+		this.video.currentTime = timecode - this.state.timecodeBase / 1000;
 
 	}
 
@@ -61,6 +106,9 @@ class Video extends Component {
 
 		// TODO
 		console.error('HLS NOT IMPLEMENTED YET')
+
+		this.hls.loadSource(this.props.src);
+		this.hls.attachMedia(this.video);
 
 	}
 
