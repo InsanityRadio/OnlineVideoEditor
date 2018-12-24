@@ -2,27 +2,19 @@ import React, { Component } from 'react';
 
 import TimelineComponent from '../components/Timeline';
 
+import AbsoluteTimePicker from '../components/AbsoluteTimePicker';
+
 import Video from '../components/Video';
+import VideoControls from '../components/VideoControls';
 
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import Switch from '@material-ui/core/Switch';
-import FormGroup from '@material-ui/core/FormGroup';
-import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
 
-
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const styles = theme => ({
 	button: {
@@ -34,18 +26,21 @@ const styles = theme => ({
 class Import extends Component {
 
 	state = {
-		currentTime: 0
+		currentTime: 0,
+		ready: false,
+		video: {
+			playing: false
+		},
+
+		segmentStart: -1,
+		segmentEnd: -1
 	}
 
 	componentWillMount () {
 
 		let topOfHour = (Date.now() / 1000 | 0); topOfHour = topOfHour - (topOfHour % 3600);
 
-		// Show 5 minutes initially in our window 
-		let topOfHourPlus = topOfHour + 3600;
-
 		this.start = topOfHour - 3600*5;
-		this.end = topOfHourPlus;
 
 		setInterval(() => {
 
@@ -57,12 +52,24 @@ class Import extends Component {
 				return;
 			}
 
+			let ready = this.state.ready
+
 			this.setState({
-				currentTime: this.video.getTimecode()
-			})
+				currentTime: this.video.getTimecode(),
+				currentEdge: this.video.getEdgeTimecode(),
+				ready: true
+			}, () => ready || this.videoLoaded())
 
 		}, 100);
 
+	}
+
+	// videoLoaded is called when the video has loaded sufficiently that we can begin
+	videoLoaded () {
+		this.setState({
+			segmentStart: (Date.now() / 1000 | 0) - 660,
+			segmentEnd: (Date.now() / 1000 | 0) - 60
+		})
 	}
 
 	setVideo (video) {
@@ -70,10 +77,46 @@ class Import extends Component {
 	}
 
 	onTimelineUpdate (timecode) {
-		console.log('time update', timecode)
 		this.video.setTimecode(timecode);
 	}
 
+	setVideoState (state) {
+		this.setState({
+			video: state
+		})
+	}
+
+	setSegmentStart (value) {
+
+		console.log('request set segment start', value)
+
+		let segmentEnd = this.state.segmentEnd;
+
+		if (segmentEnd <= value) {
+			segmentEnd = value + 30;
+		}
+
+		this.setState({
+			segmentStart: value,
+			segmentEnd: segmentEnd
+		})
+
+	}
+
+	setSegmentEnd (value) {
+
+		let segmentStart = this.state.segmentStart;
+
+		if (segmentStart >= value) {
+			segmentStart = value - 30;
+		}
+
+		this.setState({
+			segmentStart: segmentStart,
+			segmentEnd: value
+		})
+
+	}
 	render () {
 		return (
 
@@ -85,22 +128,25 @@ class Import extends Component {
 						<div className="video-player-video-element">
 							<Video
 								ref={ (v) => this.setVideo(v) }
+								onStateChange={ (state) => this.setVideoState(state) }
 								hls={ true }
-								src="http://localhost:3000/api/ingest/video/preview.m3u8?start_time=1545354123&end_time=99999999999" />
+								src="/api/ingest/video/preview.m3u8?start_time=1545354123&end_time=99999999999"
+								segmentStart = { this.state.segmentStart }
+								segmentEnd = { this.state.segmentEnd } />
 						</div>
 					</div>
 
-					<div className="video-controls">
-						PLAY / PAUSE / FORWARD / BACKWARDS 
-					</div>
+					<VideoControls video={ this.video } videoState={ this.state.video } />
 
 					<div className="video-timeline">
 						
 						<TimelineComponent
 							start={this.start}
-							end={this.end}
+							end={this.state.currentEdge }
 							offset={ this.state.currentTime }
 							onChange={ this.onTimelineUpdate.bind(this) }
+							segmentStart = { this.state.segmentStart }
+							segmentEnd = { this.state.segmentEnd }
 							initialOffset={ 0 } />
 
 					</div>
@@ -114,8 +160,12 @@ class Import extends Component {
 						<AppBar position="static">
 							<Toolbar>
 								<div style={{ flex: 1 }}></div>
-								<IconButton color="inherit" aria-label="Menu">
-									S
+								<IconButton color="inherit" aria-label="Save For Later">
+									<FontAwesomeIcon icon="save" />
+								</IconButton>
+
+								<IconButton color="inherit" aria-label="Go">
+									<FontAwesomeIcon icon="step-forward" />
 								</IconButton>
 							</Toolbar>
 						</AppBar>
@@ -126,12 +176,12 @@ class Import extends Component {
 
 							<h3>1. Find Content</h3>
 
-							<Button variant="outlined" color="secondary">
-								Search By Time
+							<Button variant="contained" color="secondary">
+								<FontAwesomeIcon icon="stopwatch" />{' '} Search By Time
 							</Button>
 
-							<Button variant="outlined" color="secondary">
-								Search By Clip
+							<Button variant="contained" color="secondary">
+								<FontAwesomeIcon icon="file-video" /> Search By Clip
 							</Button>
 
 							<br /><br />
@@ -143,7 +193,19 @@ class Import extends Component {
 
 							<br /><br />
 
-							<h3>2. Options</h3>
+							<h3>2. Fine Tune</h3>
+
+							<AbsoluteTimePicker
+								label="Start"
+								video={ this.video }
+								onChange={ this.setSegmentStart.bind(this) }
+								value={ this.state.segmentStart } />
+
+							<AbsoluteTimePicker
+								label="End"
+								video={ this.video }
+								onChange={ this.setSegmentEnd.bind(this) }
+								value={ this.state.segmentEnd } />
 
 						</div>
 

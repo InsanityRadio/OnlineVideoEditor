@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Router, Route, Switch } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
 
+import './App.css';
 import logo from './logo.svg';
 
 import HomeComponent from './home/Home';
@@ -10,11 +11,39 @@ import ImportComponent from './import/Import';
 
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 
-import './App.css';
+// Set up Font Awesome icons.
+// We only import what we need to ensure that we don't use crazy resources.
+
+import { library } from '@fortawesome/fontawesome-svg-core';
+
+import {
+	faPlay,
+	faPause,
+	faLongArrowAltLeft,
+	faLongArrowAltRight,
+	faStepBackward,
+	faStepForward,
+	faSave,
+	faFileVideo,
+	faStopwatch
+} from '@fortawesome/free-solid-svg-icons';
+
+library.add(
+	faPlay,
+	faPause,
+	faLongArrowAltLeft,
+	faLongArrowAltRight,
+	faStepBackward,
+	faStepForward,
+	faSave,
+	faFileVideo,
+	faStopwatch
+);
+
 
 const theme = createMuiTheme({
 	palette: {
-		type: 'dark'
+		type: 'dark',
 	},
 });
 

@@ -12,6 +12,10 @@ import { withStyles } from '@material-ui/core/styles';
  */
 class Video extends Component {
 
+	state = {
+		loading: true
+	}
+
 	shouldComponentUpdate (nextProps, nextState) {
 
 		// If the SRC updates anywhere, we need to update.
@@ -28,8 +32,6 @@ class Video extends Component {
 
 		// We can't use web workers with WebPack/create-react-app.
 		this.hls = new Hls({ enableWorker: false });
-		console.log('HLS:', this.hls)
-
 		this.registerEvents();
 
 	}
@@ -44,7 +46,10 @@ class Video extends Component {
 
 	registerEvents () {
 
-		this.hls.on(Hls.Events.MANIFEST_PARSED, function () {
+		this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+			this.setState({
+				loading: false
+			})
 		});
 
 		this.hls.on(Hls.Events.ERROR, (e, data) => {
@@ -54,8 +59,12 @@ class Video extends Component {
 		this.hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
 			let rawDateTime = data.details.fragments[0].programDateTime;
 
+			// As old fragments are discarded (think sliding window), this allows us to work out
+			// the exact timecode where video.currentTime = 0
+			let syncOffset = data.details.fragments[0].start * 1000;
+
 			this.setState({
-				timecodeBase: rawDateTime
+				timecodeBase: rawDateTime - syncOffset
 			});
 		});
 
@@ -77,13 +86,20 @@ class Video extends Component {
 
 	setTimecode (timecode) {
 		
+		// If this timecode isn't loaded, return false.
+		// It's the responsibility of our parent element to try and load the manifest at that point.
 		if (timecode < this.state.timecodeBase / 1000) {
 			console.error('Tried to seek to timecode that isn\'t loaded');
-			return;
+			return false;
 		}
 
 		this.video.currentTime = timecode - this.state.timecodeBase / 1000;
+		return true;
 
+	}
+
+	getEdgeTimecode () {
+		return this.state.timecodeBase / 1000 + this.hls.liveSyncPosition;
 	}
 
 	setSRC () {
@@ -126,12 +142,57 @@ class Video extends Component {
 
 	}
 
+	play () {
+		this.video.play();
+	}
+
+	pause () {
+		this.video.pause();
+	}
+
+	getFrameRate () {
+		return 25;
+	}
+
+	stepBackwards () {
+		let frameRate = this.getFrameRate();
+		this.video.currentTime -= 1/frameRate;
+	}
+
+	stepForwards () {
+		let frameRate = this.getFrameRate();
+		this.video.currentTime += 1/frameRate;
+	}
+
+	seekStart () {
+		this.setTimecode(this.props.segmentStart);
+	}
+
+	seekEnd () {
+		this.setTimecode(this.props.segmentEnd);
+	}
+
+	onVideoStateChange (event) {
+		let target = event.target;
+
+		this.setState({
+			videoState: {
+				playing: (!target.paused && !target.ended && !this.state.loading && target.currentTime > 0)
+			}
+		}, () => this.props.onStateChange && this.props.onStateChange(this.state.videoState));
+	}
+
 	render () {
 
 		let props = Object.assign({}, this.props);
 		props.src = this.state.src;
 
-		return <video ref={ (v) => this.setVideo(v) } {...props} />;
+		return <video
+			ref={ (v) => this.setVideo(v) }
+			onPlay={ this.onVideoStateChange.bind(this) }
+			onPause={ this.onVideoStateChange.bind(this) }
+			onEnded={ this.onVideoStateChange.bind(this) }
+			{...props} />;
 	}
 
 }

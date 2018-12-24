@@ -38,7 +38,7 @@
 	height: 100%;
 }
 
-.video-player.fit {
+.video-player.fit, .video-player.fit + .video-controls {
 	max-width: 560px;
 }
 
@@ -124,4 +124,25 @@
 .video-layer-stretch video {
 	object-fit: cover;
 	width: 100%;
+}
+
+.video-controls {
+	display: flex;
+	width: 100%;
+}
+
+.video-controls-toolbar {
+}
+
+.flex-right {
+	flex: 1;
+	text-align: right;
+}
+
+.absolute-time-container {
+	display: flex;
+}
+
+.absolute-time-button-array {
+	margin-top: 16px;
 }

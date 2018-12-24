@@ -1,14 +1,23 @@
 import React, { Component } from 'react';
 import moment from 'moment';
 
-import TimelineComponent from '../components/Timeline';
-
+import { Slider } from 'material-ui-slider';
 import { withStyles } from '@material-ui/core/styles';
+
+const styles = {
+	slider: {
+		color: '#C00',
+		width: '50px',
+		float: 'right',
+		padding: '22px 0px',
+	},
+};
 
 class Timeline extends Component {
 
 	state = {
 		cursorPosition: 60,
+		zoom: 8,
 		viewportStart: 0
 	}
 
@@ -17,15 +26,17 @@ class Timeline extends Component {
 		this.start = nextProps.start;
 		this.end = nextProps.end;
 
-		if (!this.dragging && this.props.offset != nextProps.offset) {
+		if (this.state.zoom != nextState.zoom) {
+			return true;
+		}
+
+		if (!this.draggingPlayhead && this.props.offset != nextProps.offset) {
 
 			// Will updating the offset scroll us out of view?
 			let state = this.getCanvasState();
 
 			if (nextProps.offset < state.viewportStart || nextProps.offset > state.viewportStart + state.viewportWidth) {
 				nextState.viewportStart = nextProps.offset - state.viewportWidth / 3;
-			} else {
-				return true;
 			}
 
 			this.setState({
@@ -78,12 +89,6 @@ class Timeline extends Component {
 
 		this.canvasContext = c.getContext('2d');
 
-		this.canvasContext.fillStyle = '#FF0000'
-		this.canvasContext.fillRect(0, 0, c.width, c.height)
-
-		this.canvasContext.fillStyle = '#FFF'
-		this.canvasContext.fillText('test', 20, 20)
-
 		this.drawFullGrid();
 		this.drawPlayhead();
 
@@ -107,10 +112,34 @@ class Timeline extends Component {
 
 	}
 
+	getZoom (level) {
+		// 150
+		let unitMap = (this.state.zoom || 150), unit = 60, steps = 10;
+
+		if (level < 2) {
+			return [level * 50 + 10, 1800, 6];
+		} else if (level < 4) {
+			return [(level - 2) * 50 + 100, 600, 10];
+		} else if (level < 6) {
+			return [(level - 4) * 50 + 100, 300, 10];
+		} else if (level < 9) {
+			// 100 - 200
+			return [(level - 6) * 25 + 100, 60, 10];
+		} else {
+			return [(level - 6) * 25 + 100, 30, 60];
+		}
+
+		return [150, 60, 10];
+	}
+
 	getCanvasState () {
 		// 150px = 1 unit, based on zoom level
 		// 1 unit = 10 seconds
-		let unitMap = 150, unit = 60;
+
+		let zoomLevels = this.getZoom(this.state.zoom);
+
+		let unitMap = zoomLevels[0], unit = zoomLevels[1], steps = zoomLevels[2];
+
 		return {
 			unitMap: unitMap,
 			unit: unit,
@@ -118,7 +147,7 @@ class Timeline extends Component {
 			// visible seconds
 			cursorPosition: this.state.cursorPosition,
 			// minor units per major unit (10 minor steps (inclusive) every 1 step)
-			steps: 10,
+			steps: steps,
 			viewportStart: this.viewportStart - 2,
 			viewportWidth: this.canvasWidth / unitMap * unit,
 		}
@@ -132,6 +161,7 @@ class Timeline extends Component {
 		let myDuration = this.end - this.start;
 
 		this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
 
 		let state = this.getCanvasState();
 
@@ -148,7 +178,11 @@ class Timeline extends Component {
 
 			// draw major steps
 			if ((i % (state.unit / state.steps)) == 0) {
-				this.drawLine(x, 40, x, amIMaj ? 30 : 37);
+
+				this.canvasContext.strokeStyle = amIMaj ?  '#CCC' : 'rgba(255, 255, 255, 0.3)';
+
+
+				this.drawLine(x, 80, x, amIMaj ? 30 : 37);
 			}
 
 			// draw time code every interval
@@ -201,18 +235,47 @@ class Timeline extends Component {
 
 	fastRender () {
 		this.restoreCanvas();
+		this.drawSegments();
 		this.drawPlayhead();
 	}
 
 	drawPlayhead () {
 
 		let state = this.getCanvasState();
-
 		let posX = (state.cursorPosition - state.viewportStart) * state.unitMap / state.unit;
+
+		this.canvasContext.strokeStyle = '#EEE';
+		this.canvasContext.fillStyle = '#EEE';
 
 		this.drawLine(posX, 30, posX, 99);
 
 		this.canvasContext.fillRect(posX - 7.5, 28, 15, 12);
+
+	}
+
+	drawSegments () {
+		this.drawSegment({
+			start: this.props.segmentStart,
+			end: this.props.segmentEnd
+		})
+	}
+
+	drawSegment (segment) {
+
+		let state = this.getCanvasState();
+
+		let startX = (segment.start - state.viewportStart) * state.unitMap / state.unit;
+		let endX = (segment.end - state.viewportStart) * state.unitMap / state.unit;
+
+		// No point drawing it if it's really far off screen.
+		if (startX > this.canvasWidth + 40 || endX < -40) {
+			return;
+		}
+
+		this.canvasContext.strokeStyle = 'rgba(200, 0, 0, 0.4)';
+		this.canvasContext.fillStyle = 'rgba(200, 0, 0, 0.7)';
+
+		this.canvasContext.fillRect(startX, 40, endX - startX, 40);
 
 	}
 
@@ -227,7 +290,7 @@ class Timeline extends Component {
 		this.canvasContext.textAlign = 'center';
 		this.canvasContext.textBaseline = 'bottom';
 
-		this.canvasContext.fillStyle='#000';
+		this.canvasContext.fillStyle = '#FFF';
 		this.canvasContext.fillText(text, x1, y1);
 	}
 
@@ -245,12 +308,24 @@ class Timeline extends Component {
 		// did we click the 
 		let playheadX = (state.cursorPosition - state.viewportStart) * state.unitMap / state.unit;
 
-		if (mousePosition[0] > playheadX - 10
-			&& mousePosition[0] < playheadX + 10
-			&& mousePosition[1] > 28
-			&& mousePosition[1] < 40) {
+		if (mousePosition[1] >= 40) {
+			return;
+		}
 
-			this.dragging = true;
+		this.draggingStartX = mousePosition[0];
+		this.draggingViewportStart = this.state.viewportStart;
+		this.draggingTimeline = true;
+		this.hasMovedTimeline = false;
+
+		if (mousePosition[1] <= 28) {
+			return;
+		}
+
+		if (mousePosition[0] > playheadX - 10
+			&& mousePosition[0] < playheadX + 10) {
+
+			this.draggingTimeline = false;
+			this.draggingPlayhead = true;
 
 		}
 
@@ -258,11 +333,29 @@ class Timeline extends Component {
 
 	mouseMove (event) {
 
-		if (!this.dragging) {
+		let state = this.getCanvasState(), mousePosition = this.getMousePosition(event);
+
+		if (this.draggingTimeline) {
+
+			let newX = (this.draggingStartX - mousePosition[0]) * state.unit / state.unitMap;
+
+			if (newX != 0) {
+				this.hasMovedTimeline = true;
+			}
+
+			this.setState({
+				viewportStart: this.draggingViewportStart + newX
+			}, () => {
+				this.rerender();
+			})
+
 			return;
 		}
 
-		let state = this.getCanvasState(), mousePosition = this.getMousePosition(event);
+		if (!this.draggingPlayhead) {
+			return;
+		}
+
 		let playheadX = (state.cursorPosition - state.viewportStart) * state.unitMap / state.unit;
 		let cursorPosition = this.state.cursorPosition;
 
@@ -314,19 +407,46 @@ class Timeline extends Component {
 
 	mouseUp (event) {
 
-		if (!this.dragging) {
+		let state = this.getCanvasState(), mousePosition = this.getMousePosition(event);
+
+		if (!this.draggingPlayhead && !this.hasMovedTimeline) {
+
+			this.draggingTimeline = false;
+
+			if (mousePosition[1] <= 28 || mousePosition[1] >= 40) {
+				return;
+			}
+
+			// User clicked timeline without moving it
+
+			let finalCursorPosition = (mousePosition[0] * state.unit / state.unitMap) + state.viewportStart;
+
+			finalCursorPosition = Math.max(Math.min(finalCursorPosition, this.end), this.start);
+
+			this.setState({
+				cursorPosition: finalCursorPosition
+			}, () => {
+				this.rerender();
+				this.props.onChange && this.props.onChange(this.state.cursorPosition);
+			})
+
 			return;
 		}
 
-		let state = this.getCanvasState(), mousePosition = this.getMousePosition(event);
+		if (this.draggingTimeline) {
+			// User dragged timeline, we don't want to register their drop position as we don't care.
+			this.draggingTimeline = false;
+			return;
+		}
+
+		this.draggingPlayhead = false;
+
+		// User dragged playhead
 
 		// where did we set it down??
-		this.dragging = false;
-
 		let playheadX = mousePosition[0];
 
 		let finalCursorPosition = (playheadX * state.unit / state.unitMap) + state.viewportStart;
-
 		finalCursorPosition = Math.max(Math.min(finalCursorPosition, this.end), this.start);
 
 		this.setState({
@@ -343,17 +463,44 @@ class Timeline extends Component {
 		return [date.format('DD/MM/YYYY'), date.format('HH:mm:ss')];
 	}
 
+	setZoom (value) {
+		// given the zoom level, work out where the cursor is in pixels & align it properly
+
+		let state = this.getCanvasState();
+		let posX = (state.cursorPosition - state.viewportStart) * state.unitMap / state.unit;
+
+		let newZoom = this.getZoom(value);
+		let newUnitMap = newZoom[0], newUnit = newZoom[1];
+
+		let viewportStart = this.viewportStart = state.cursorPosition - (posX * newUnit / newUnitMap);
+
+		this.setState({
+			zoom: value,
+			viewportStart: viewportStart
+		}, () => this.fullRender())
+	}
+
 	render () {
 
-		return <canvas
-			className="timeline-canvas"
-			ref={ (c) => this.setCanvas(c) }
-			onMouseDown={ this.mouseDown.bind(this) }
-			onMouseMove={ this.mouseMove.bind(this) }
-			onMouseUp={ this.mouseUp.bind(this) } ></canvas>
+		return <div style={{ textAlign: 'right' }}>
+			<div style={ styles.slider }>
+				<Slider
+					color={ styles.slider.color }
+					value={ this.state.zoom }
+					min={ 1 }
+					max={ 10 }
+					onChange={ (value) => this.setZoom(value) }></Slider>
+			</div>
+			<canvas
+				className="timeline-canvas"
+				ref={ (c) => this.setCanvas(c) }
+				onMouseDown={ this.mouseDown.bind(this) }
+				onMouseMove={ this.mouseMove.bind(this) }
+				onMouseUp={ this.mouseUp.bind(this) } ></canvas>
+		</div>;
 
 	}
 
 }
 
-export default Timeline;
+export default withStyles(styles)(Timeline);
