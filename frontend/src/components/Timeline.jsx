@@ -13,12 +13,271 @@ const styles = {
 	},
 };
 
+class Draggable {
+
+	constructor (timeline) {
+		this.timeline = timeline;
+		this.canvasContext = timeline.canvasContext;
+	}
+
+	getX () {
+		return -1;
+	}
+
+	getCanvasX () {
+		let state = this.getCanvasState();
+		return (this.getX() - state.viewportStart) * state.unitMap / state.unit;
+	}
+
+	canDrag (x) {
+		return false;
+	}
+
+	isHit (mousePosition) {
+		return false;
+	}
+
+	startDrag (mousePosition) {
+		this.dragging = true;
+	}
+
+	mouseMove (mousePosition) {
+
+		let state = this.getCanvasState();
+
+		let playheadX = this.getCanvasX();
+		let cursorPosition = state.cursorPosition;
+
+		if (mousePosition[0] > this.timeline.canvasWidth - 20) {
+
+			let velocity = 1 - (this.timeline.canvasWidth - mousePosition[0]) / 20;
+
+			return [
+				state.realViewportStart + velocity,
+				this.applyBounds(cursorPosition)
+			];
+
+		} else if (mousePosition[0] < 20) {
+
+			let velocity = mousePosition[0] / 20;
+
+			return [
+				state.realViewportStart - velocity,
+				this.applyBounds(cursorPosition)
+			];
+
+		} else {
+
+			// Mouse hasn't moved to an extreme
+			let finalCursorPosition = (mousePosition[0] * state.unit / state.unitMap) + state.viewportStart;
+			finalCursorPosition = this.applyBounds(finalCursorPosition);
+
+			return [null, finalCursorPosition];
+		}
+
+	}
+
+	applyBounds (position) {
+		return Math.max(Math.min(position, this.timeline.end), this.timeline.start);
+	}
+
+	setPositionAndUpdate (value) {
+
+	}
+
+	stopDrag (mousePosition) {
+		this.dragging = false;
+
+		let state = this.getCanvasState();
+		let newX = mousePosition[0];
+
+		let finalPosition = (newX * state.unit / state.unitMap) + state.viewportStart;
+		finalPosition = this.applyBounds(finalPosition);
+
+		this.setPositionAndUpdate(finalPosition);
+	}
+
+	getCanvasState () {
+		return this.timeline.getCanvasState();
+	}
+
+	draw () {
+
+	}
+
+}
+
+class Playhead extends Draggable {
+
+	getX () {
+		let state = this.getCanvasState();
+		return state.cursorPosition;
+	}
+
+	isHit (mousePosition) {
+		let playheadX = this.getCanvasX();
+
+		if (mousePosition[1] <= 28 || mousePosition[1] > 40) {
+			return false;
+		}
+
+		if (mousePosition[0] > playheadX - 10
+				&& mousePosition[0] < playheadX + 10) {
+			return true;
+		}
+	}
+
+	mouseMove (mousePosition) {
+		let data = super.mouseMove(mousePosition);
+
+		if (data[0] == null) {
+			this.timeline.setState({
+				cursorPosition: data[1]
+			}, () => this.timeline.sendOnChange());
+		} else {
+			this.timeline.setState({
+				viewportStart: data[0],
+				cursorPosition: data[1]
+			}, () => this.timeline.sendOnChange());
+		}
+
+	}
+
+	setPositionAndUpdate (cursorPosition) {
+		this.timeline.setState({
+			cursorPosition: cursorPosition
+		}, () => this.timeline.sendOnChange());
+	}
+
+	stopDrag (mousePosition) {
+		this.dragging = false;
+
+		let state = this.getCanvasState();
+		let playheadX = mousePosition[0];
+
+		let finalCursorPosition = (playheadX * state.unit / state.unitMap) + state.viewportStart;
+		finalCursorPosition = Math.max(Math.min(finalCursorPosition, this.timeline.end), this.timeline.start);
+
+		this.setPositionAndUpdate(finalCursorPosition);
+	}
+
+	draw () {
+		let state = this.getCanvasState();
+		let posX = (state.cursorPosition - state.viewportStart) * state.unitMap / state.unit;
+
+		this.timeline.canvasContext.strokeStyle = '#EEE';
+		this.timeline.canvasContext.fillStyle = '#EEE';
+
+		this.timeline.drawLine(posX, 30, posX, 99);
+
+		this.timeline.canvasContext.fillRect(posX - 7.5, 28, 15, 12);
+	}
+
+}
+
+class SegmentTerminus extends Draggable {
+
+	constructor (timeline, type) {
+		super(timeline);
+		this.type = type;
+	}
+
+	getX () {
+		return this.timeline.props[this.getDirectionPropLabel()];
+	}
+
+	mouseMove (mousePosition) {
+		let data = super.mouseMove(mousePosition);
+
+		if (data[0] != null) {
+			this.timeline.setState({
+				viewportStart: data[0],
+			}, () => this.timeline.sendOnChange());
+		}
+		this.setPositionAndUpdate(data[1])
+
+	}
+
+	setPositionAndUpdate (position) {
+		this.timeline.props[this.getDirection() == 'start' ? 'onSegmentStart' : 'onSegmentEnd'](position);
+	}
+
+	getDirection () {
+		return this.type;
+	}
+
+	getDirectionPropLabel () {
+		return this.type == 'start' ? 'segmentStart' : 'segmentEnd';
+	}
+
+	draw () {
+
+		let state = this.getCanvasState();
+		let posX = (state.cursorPosition - state.viewportStart) * state.unitMap / state.unit;
+
+		this.timeline.canvasContext.strokeStyle = '#EEE';
+		this.timeline.canvasContext.fillStyle = '#EEE';
+
+		if (this.getDirection() == 'start') {
+			this.drawStart();
+		} else {
+			this.drawEnd();
+		}
+
+	}
+
+	drawStart () {
+		this.timeline.canvasContext.fillStyle = 'rgba(220, 0, 0, 0.9)';
+		this.timeline.canvasContext.fillRect(this.getCanvasX() - 5, 40, 5, 40);
+		this.timeline.canvasContext.fillRect(this.getCanvasX() - 10, 50, 8, 20);
+	}
+
+	drawEnd () {
+		this.timeline.canvasContext.fillStyle = 'rgba(220, 0, 0, 0.9)';
+		this.timeline.canvasContext.fillRect(this.getCanvasX(), 40, 5, 40);
+		this.timeline.canvasContext.fillRect(this.getCanvasX() + 2, 50, 8, 20);
+	}
+
+	isHit (mousePosition) {
+		let playheadX = this.getCanvasX();
+
+		if (mousePosition[1] < 50 || mousePosition[1] > 70) {
+			return false;
+		}
+
+		let canvasX = this.getCanvasX();
+
+		if (this.getDirection() == 'start' && mousePosition[0] > canvasX - 10
+				&& mousePosition[0] < canvasX - 2) {
+			console.log('clicked start segment');
+			return true;
+		} else if (this.getDirection() == 'end' && mousePosition[0] > canvasX + 2
+				&& mousePosition[0] < canvasX + 10) {
+			console.log('clicked end segment');
+			return true;
+		}
+	}
+
+}
+
 class Timeline extends Component {
 
 	state = {
 		cursorPosition: 60,
 		zoom: 8,
 		viewportStart: 0
+	}
+
+	dragging = null;
+
+	constructor (props) {
+		super(props);
+		this.playhead = new Playhead(this);
+
+		this.segments = {
+			start: new SegmentTerminus(this, 'start'),
+			end: new SegmentTerminus(this, 'end')
+		}
 	}
 
 	shouldComponentUpdate (nextProps, nextState) {
@@ -30,12 +289,14 @@ class Timeline extends Component {
 			return true;
 		}
 
-		if (!this.draggingPlayhead && this.props.offset != nextProps.offset) {
+		if (!this.draggingTimeline && !this.dragging && this.props.offset != nextProps.offset) {
 
 			// Will updating the offset scroll us out of view?
 			let state = this.getCanvasState();
 
-			if (nextProps.offset < state.viewportStart || nextProps.offset > state.viewportStart + state.viewportWidth) {
+			if (this.props.autoUpdateViewport
+					&& (nextProps.offset < state.viewportStart
+						|| nextProps.offset > state.viewportStart + state.viewportWidth)) {
 				nextState.viewportStart = nextProps.offset - state.viewportWidth / 3;
 			}
 
@@ -149,6 +410,7 @@ class Timeline extends Component {
 			// minor units per major unit (10 minor steps (inclusive) every 1 step)
 			steps: steps,
 			viewportStart: this.viewportStart - 2,
+			realViewportStart: this.viewportStart,
 			viewportWidth: this.canvasWidth / unitMap * unit,
 		}
 	}
@@ -161,7 +423,6 @@ class Timeline extends Component {
 		let myDuration = this.end - this.start;
 
 		this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
 
 		let state = this.getCanvasState();
 
@@ -195,8 +456,7 @@ class Timeline extends Component {
 		}
 
 		this.saveCanvas();
-
-		this.drawPlayhead()
+		this.drawPlayhead();
 
 	}
 
@@ -212,6 +472,16 @@ class Timeline extends Component {
 		this.canvasContext.putImageData(this.canvasState, 0, 0);
 	}
 
+	recenter () {
+		let state = this.getCanvasState();
+
+		if (state.cursorPosition > state.viewportStart + state.viewportWidth) {
+			this.setState({
+				viewportStart: this.props.offset - state.viewportWidth / 3
+			});
+		}
+	}
+
 	rerender () {
 		if (!this.canvasContext) {
 			return;
@@ -219,7 +489,8 @@ class Timeline extends Component {
 
 		let state = this.getCanvasState();
 
-		if (state.cursorPosition > state.viewportStart + state.viewportWidth) {
+		if (this.props.autoUpdateViewport
+				&& state.cursorPosition > state.viewportStart + state.viewportWidth) {
 			this.setState({
 				viewportStart: state.cursorPosition - 2
 			})
@@ -240,17 +511,7 @@ class Timeline extends Component {
 	}
 
 	drawPlayhead () {
-
-		let state = this.getCanvasState();
-		let posX = (state.cursorPosition - state.viewportStart) * state.unitMap / state.unit;
-
-		this.canvasContext.strokeStyle = '#EEE';
-		this.canvasContext.fillStyle = '#EEE';
-
-		this.drawLine(posX, 30, posX, 99);
-
-		this.canvasContext.fillRect(posX - 7.5, 28, 15, 12);
-
+		this.playhead.draw();
 	}
 
 	drawSegments () {
@@ -258,6 +519,9 @@ class Timeline extends Component {
 			start: this.props.segmentStart,
 			end: this.props.segmentEnd
 		})
+
+		this.segments.start.draw();
+		this.segments.end.draw();
 	}
 
 	drawSegment (segment) {
@@ -302,10 +566,21 @@ class Timeline extends Component {
 		return [event.clientX - rect.left, event.clientY - rect.top]
 	}
 
+	draggingPlayhead () {
+		return this.dragging == this.playhead;
+	}
+
 	mouseDown (event) {
 		let state = this.getCanvasState(), mousePosition = this.getMousePosition(event);
 
-		// did we click the 
+		if (this.playhead.isHit(mousePosition)) {
+			this.dragging = this.playhead;
+		} else if (this.segments.start.isHit(mousePosition)) {
+			this.dragging = this.segments.start;
+		} else if (this.segments.end.isHit(mousePosition)) {
+			this.dragging = this.segments.end;
+		}
+
 		let playheadX = (state.cursorPosition - state.viewportStart) * state.unitMap / state.unit;
 
 		if (mousePosition[1] >= 40) {
@@ -317,16 +592,18 @@ class Timeline extends Component {
 		this.draggingTimeline = true;
 		this.hasMovedTimeline = false;
 
-		if (mousePosition[1] <= 28) {
-			return;
-		}
-
-		if (mousePosition[0] > playheadX - 10
-			&& mousePosition[0] < playheadX + 10) {
-
+		if (this.playhead.isHit(mousePosition)) {
 			this.draggingTimeline = false;
-			this.draggingPlayhead = true;
-
+			this.dragging = this.playhead;
+			this.playhead.startDrag();
+		}  else if (this.segments.start.isHit(mousePosition)) {
+			this.draggingTimeline = false;
+			this.dragging = this.segments.start;
+			this.segments.start.startDrag();
+		} else if (this.segments.end.isHit(mousePosition)) {
+			this.draggingTimeline = false;
+			this.dragging = this.segments.end;
+			this.segments.end.startDrag();
 		}
 
 	}
@@ -352,56 +629,11 @@ class Timeline extends Component {
 			return;
 		}
 
-		if (!this.draggingPlayhead) {
+		if (!this.dragging) {
 			return;
 		}
 
-		let playheadX = (state.cursorPosition - state.viewportStart) * state.unitMap / state.unit;
-		let cursorPosition = this.state.cursorPosition;
-
-		// is mouse to left of playhead? move back
-		// is mouse to right of playhead? move forward
-
-		if (mousePosition[0] > this.canvasWidth - 20) {
-
-			let velocity = 1 - (this.canvasWidth - mousePosition[0]) / 20;
-
-			this.setState({
-				viewportStart: this.state.viewportStart + velocity,
-				cursorPosition: Math.max(Math.min(cursorPosition + velocity, this.end), this.start)
-			}, () => {
-				this.rerender();
-				this.props.onChange && this.props.onChange(this.state.cursorPosition);
-			})
-
-		} else if (mousePosition[0] < 20) {
-
-			let velocity = mousePosition[0] / 20;
-
-			this.setState({
-				viewportStart: this.state.viewportStart - velocity,
-				cursorPosition: Math.max(Math.min(cursorPosition - velocity, this.end), this.start)
-			}, () => {
-				this.rerender();
-				this.props.onChange && this.props.onChange(this.state.cursorPosition);
-			})
-
-		} else {
-
-			// Mouse hasn't moved to an extreme
-			let finalCursorPosition = (mousePosition[0] * state.unit / state.unitMap) + state.viewportStart;
-
-			finalCursorPosition = Math.max(Math.min(finalCursorPosition, this.end), this.start);
-
-			this.setState({
-				cursorPosition: finalCursorPosition
-			}, () => {
-				this.rerender();
-				this.props.onChange && this.props.onChange(this.state.cursorPosition);
-			})
-		}
-
-		// velocity = distance we've moved mouse (even if it's off canvas)
+		let data = this.dragging.mouseMove(mousePosition)
 
 	}
 
@@ -409,7 +641,7 @@ class Timeline extends Component {
 
 		let state = this.getCanvasState(), mousePosition = this.getMousePosition(event);
 
-		if (!this.draggingPlayhead && !this.hasMovedTimeline) {
+		if (!this.dragging && !this.hasMovedTimeline) {
 
 			this.draggingTimeline = false;
 
@@ -419,7 +651,7 @@ class Timeline extends Component {
 
 			// User clicked timeline without moving it
 
-			let finalCursorPosition = (mousePosition[0] * state.unit / state.unitMap) + state.viewportStart;
+			/* let finalCursorPosition = (mousePosition[0] * state.unit / state.unitMap) + state.viewportStart;
 
 			finalCursorPosition = Math.max(Math.min(finalCursorPosition, this.end), this.start);
 
@@ -428,7 +660,9 @@ class Timeline extends Component {
 			}, () => {
 				this.rerender();
 				this.props.onChange && this.props.onChange(this.state.cursorPosition);
-			})
+			}) */
+
+			this.playhead.stopDrag(mousePosition);
 
 			return;
 		}
@@ -439,23 +673,15 @@ class Timeline extends Component {
 			return;
 		}
 
-		this.draggingPlayhead = false;
+		let dragging = this.dragging;
+		this.dragging = null;
 
-		// User dragged playhead
+		dragging && dragging.stopDrag(mousePosition);
 
-		// where did we set it down??
-		let playheadX = mousePosition[0];
+	}
 
-		let finalCursorPosition = (playheadX * state.unit / state.unitMap) + state.viewportStart;
-		finalCursorPosition = Math.max(Math.min(finalCursorPosition, this.end), this.start);
-
-		this.setState({
-			cursorPosition: finalCursorPosition
-		}, () => {
-			// Invoke the onChange event to allow appropriate action
-			this.props.onChange && this.props.onChange(finalCursorPosition);
-		})
-
+	sendOnChange () {
+		this.props.onChange && this.props.onChange(this.state.cursorPosition);
 	}
 
 	timecode (seconds) {

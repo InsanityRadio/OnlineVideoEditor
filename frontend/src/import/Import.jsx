@@ -117,6 +117,15 @@ class Import extends Component {
 		})
 
 	}
+
+	serialize () {
+		return {
+			name: this.state.name,
+			startTime: this.state.segmentStart,
+			endTime: this.state.segmentEnd
+		}
+	}
+
 	render () {
 		return (
 
@@ -147,6 +156,11 @@ class Import extends Component {
 							onChange={ this.onTimelineUpdate.bind(this) }
 							segmentStart = { this.state.segmentStart }
 							segmentEnd = { this.state.segmentEnd }
+
+							autoUpdateViewport={ this.state.video.playing }
+
+							onSegmentStart={ this.setSegmentStart.bind(this) }
+							onSegmentEnd={ this.setSegmentEnd.bind(this) }
 							initialOffset={ 0 } />
 
 					</div>
