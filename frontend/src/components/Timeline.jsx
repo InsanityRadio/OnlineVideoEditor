@@ -249,11 +249,9 @@ class SegmentTerminus extends Draggable {
 
 		if (this.getDirection() == 'start' && mousePosition[0] > canvasX - 10
 				&& mousePosition[0] < canvasX - 2) {
-			console.log('clicked start segment');
 			return true;
 		} else if (this.getDirection() == 'end' && mousePosition[0] > canvasX + 2
 				&& mousePosition[0] < canvasX + 10) {
-			console.log('clicked end segment');
 			return true;
 		}
 	}
@@ -309,14 +307,8 @@ class Timeline extends Component {
 
 		}
 
-		if (this.viewportStart != nextState.viewportStart) {
-
-			// Force a full re-render if viewportStart changes (i.e. we've either scrolled out of view, etc)
-			// React's state is slow so we copy out of the state object to improve efficiency
-			this.viewportStart = nextState.viewportStart;
-
+		if (this.state.viewportStart != nextState.viewportStart) {
 			return true;
-
 		}
 
 		this.rerender();
@@ -332,8 +324,6 @@ class Timeline extends Component {
 			cursorPosition: this.props.offset || this.props.initialOffset,
 			viewportStart: this.props.offset || this.props.initialOffset
 		});
-
-		this.viewportStart = this.props.offset || this.props.initialOffset;
 
 	}
 
@@ -409,8 +399,8 @@ class Timeline extends Component {
 			cursorPosition: this.state.cursorPosition,
 			// minor units per major unit (10 minor steps (inclusive) every 1 step)
 			steps: steps,
-			viewportStart: this.viewportStart - 2,
-			realViewportStart: this.viewportStart,
+			viewportStart: this.state.viewportStart - 2,
+			realViewportStart: this.state.viewportStart,
 			viewportWidth: this.canvasWidth / unitMap * unit,
 		}
 	}
@@ -475,7 +465,7 @@ class Timeline extends Component {
 	recenter () {
 		let state = this.getCanvasState();
 
-		if (state.cursorPosition > state.viewportStart + state.viewportWidth) {
+		if (!this.draggingTimeline && state.cursorPosition > state.viewportStart + state.viewportWidth) {
 			this.setState({
 				viewportStart: this.props.offset - state.viewportWidth / 3
 			});
@@ -489,7 +479,7 @@ class Timeline extends Component {
 
 		let state = this.getCanvasState();
 
-		if (this.props.autoUpdateViewport
+		if (!this.draggingTimeline && this.props.autoUpdateViewport
 				&& state.cursorPosition > state.viewportStart + state.viewportWidth) {
 			this.setState({
 				viewportStart: state.cursorPosition - 2
@@ -698,7 +688,7 @@ class Timeline extends Component {
 		let newZoom = this.getZoom(value);
 		let newUnitMap = newZoom[0], newUnit = newZoom[1];
 
-		let viewportStart = this.viewportStart = state.cursorPosition - (posX * newUnit / newUnitMap);
+		let viewportStart = state.cursorPosition - (posX * newUnit / newUnitMap);
 
 		this.setState({
 			zoom: value,

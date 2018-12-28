@@ -157,7 +157,7 @@ class Import extends Component {
 							segmentStart = { this.state.segmentStart }
 							segmentEnd = { this.state.segmentEnd }
 
-							autoUpdateViewport={ this.state.video.playing }
+							autoUpdateViewport={ true || this.state.video.playing }
 
 							onSegmentStart={ this.setSegmentStart.bind(this) }
 							onSegmentEnd={ this.setSegmentEnd.bind(this) }
