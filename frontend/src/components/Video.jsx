@@ -52,7 +52,6 @@ class Video extends Component {
 	registerEvents () {
 
 		this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-			console.log('manifest parsed')
 			this.setState({
 				loading: false,
 				discontinuity: false
@@ -70,8 +69,6 @@ class Video extends Component {
 			// the exact timecode where video.currentTime = 0
 			let syncOffset = data.details.fragments[0].start * 1000;
 
-			console.log('level loaded')
-
 			this.state.discontinuity || this.setState({
 				timecodeBase: rawDateTime - syncOffset
 			});
@@ -85,8 +82,6 @@ class Video extends Component {
 			let expectedFragmentTime = this.state.timecodeBase + this.video.currentTime * 1000;
 
 			let error = data.frag.duration * 1100;
-
-			console.log('frag changed', fragmentTime, expectedFragmentTime, error)
 
 			if (Math.abs(expectedFragmentTime - fragmentTime) > error) {
 				this.setState({
