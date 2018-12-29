@@ -6,7 +6,7 @@ module OVE
 			# rubocop:disable Style/ClassVars
 			def self.instance
 				@@instance ||= {}
-				@@instance[self.class.to_s] ||= new
+				@@instance[self.to_s] ||= new
 			end
 			# rubocop:enable Style/ClassVars
 
