@@ -53,7 +53,7 @@ class App extends Component {
 			<BrowserRouter>
 				<MuiThemeProvider theme={theme}>
 					<Route path="/" component={ HomeComponent } />
-					<Route path="/import" component={ ImportComponent } />
+					<Route exact path="/import" component={ ImportComponent } />
 					<Route path="/import/:id/edit" component={ FrameComponent } />
 				</MuiThemeProvider>
 			</BrowserRouter>

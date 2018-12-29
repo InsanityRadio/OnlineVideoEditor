@@ -13,7 +13,8 @@ import { withStyles } from '@material-ui/core/styles';
 class Video extends Component {
 
 	state = {
-		loading: true
+		loading: true,
+		timecodeBase: 0
 	}
 
 	shouldComponentUpdate (nextProps, nextState) {
@@ -30,9 +31,12 @@ class Video extends Component {
 
 		this.setSRC();
 
-		// We can't use web workers with WebPack/create-react-app.
-		this.hls = new Hls({ enableWorker: false });
-		this.registerEvents();
+
+		if (this.props.hls) {
+			// We can't use web workers with WebPack/create-react-app.
+			this.hls = new Hls({ enableWorker: false });
+			this.registerEvents();
+		}
 
 	}
 
@@ -175,9 +179,12 @@ class Video extends Component {
 	onVideoStateChange (event) {
 		let target = event.target;
 
+		let loadingState = (!this.state.hls && event.type == 'canplay') ? false : this.state.loading;
+
 		this.setState({
+			loading: loadingState,
 			videoState: {
-				playing: (!target.paused && !target.ended && !this.state.loading && target.currentTime > 0)
+				playing: (!target.paused && !target.ended && !loadingState && target.currentTime >= 0)
 			}
 		}, () => this.props.onStateChange && this.props.onStateChange(this.state.videoState));
 	}
@@ -190,6 +197,7 @@ class Video extends Component {
 		return <video
 			ref={ (v) => this.setVideo(v) }
 			onPlay={ this.onVideoStateChange.bind(this) }
+			onCanPlay={ this.onVideoStateChange.bind(this) }
 			onPause={ this.onVideoStateChange.bind(this) }
 			onEnded={ this.onVideoStateChange.bind(this) }
 			{...props} />;
