@@ -63,13 +63,24 @@ module OVE
 
 				matches = []
 
+				# find chunks between start_time and end_time
+
 				# The first chunk should appear twice to ensure a valid comparison with less complexity
 				chunk_paths.unshift chunk_paths[0]
 
-				chunk_paths.each_cons(2) do |prev_path,next_path|
-					prev_ts = file_to_ts prev_path
-					next_ts = file_to_ts next_path
-					matches << next_path if prev_ts >= start_time && next_ts <= end_time
+				chunk_paths.each_with_index do |path, index|
+
+					start_ts = file_to_ts path
+
+					# If we're at the last chunk, we can't guess its end time.
+					# Hence, it's safer just to include it.
+					if index == chunk_paths.length - 1
+						end_ts = start_ts + 99999
+					else
+						end_ts = file_to_ts chunk_paths[index + 1]
+					end
+
+					matches << path if end_ts >= start_time && start_ts <= end_time
 				end
 
 				my_storage_engine = storage_engine

@@ -87,7 +87,21 @@ module OVE
 				# Return the metadata we're storing against this category
 				def find_metadata category
 					file_path = @root + '/' + resolve(category, 'data.json')
-					File.exist?(file_path) ? File.read(file_path) : nil
+					begin
+						File.exist?(file_path) ? JSON.parse(File.read(file_path)) : nil
+					rescue JSON::ParserError
+						nil
+					end
+				end
+
+				def find_expiry category
+					FileUtils.cd(@root) do
+						path = resolve(category, 'expires.dat')
+
+						return false if !File.exist?(expiry_dat)
+
+						return File.read(expiry_dat).to_i 
+					end
 				end
 
 				# Deletes an entire category. May be useful for cleaning up.

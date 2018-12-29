@@ -4,6 +4,10 @@ module OVE
 		class Chunk
 			attr_reader :manifest, :chunk_id, :length, :start_time, :path, :gid
 
+			def self.deserialize data, manifest
+				self.new manifest, data[:chunk_id], data[:length], data[:path], data[:gid] 
+			end
+
 			def initialize(manifest, chunk_id, length, path, gid = nil)
 				@manifest = manifest
 				@chunk_id = chunk_id
@@ -17,6 +21,15 @@ module OVE
 
 			def gid=(my_gid)
 				@gid = my_gid
+			end
+
+			def serialize
+				{
+					:chunk_id => @chunk_id,
+					:length => @length,
+					:path => @path,
+					:gid => @gid
+				}
 			end
 
 			def time

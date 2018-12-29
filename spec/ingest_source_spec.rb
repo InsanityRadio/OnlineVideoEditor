@@ -176,5 +176,34 @@ describe OVE::Ingest::Source do
 			expect(chunks.length).to eq(5)
 			expect(chunks[0].path).to eq('dummy-0.ts')
 		end
+
+		it 'correctly finds chunks' do
+			manifest = FakeManifest.new
+			manifest.chunks = [
+				 OVE::HLS::Chunk.new(manifest, 1, 5.0, 'dummy-0.ts', nil),
+				 OVE::HLS::Chunk.new(manifest, 2, 5.0, 'dummy-5.ts', nil),
+				 OVE::HLS::Chunk.new(manifest, 3, 5.0, 'dummy-10.ts', nil),
+				 OVE::HLS::Chunk.new(manifest, 4, 5.0, 'dummy-15.ts', nil),
+				 OVE::HLS::Chunk.new(manifest, 5, 5.0, 'dummy-20.ts', nil)
+			]
+
+			@source._test_manifest = manifest
+			@source._test_file_list = [
+				 'dummy-0.ts',
+				 'dummy-5.ts',
+				 'dummy-10.ts',
+				 'dummy-15.ts',
+				 'dummy-20.ts'
+			]
+
+			@source.index
+
+			chunks = @source.find_chunks(7, 18)
+
+			expect(chunks.length).to eq(3)
+			expect(chunks[0].path).to eq('dummy-5.ts')
+			expect(chunks[1].path).to eq('dummy-10.ts')
+			expect(chunks[2].path).to eq('dummy-15.ts')
+		end
 	end
 end

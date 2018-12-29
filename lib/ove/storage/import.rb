@@ -14,17 +14,26 @@ module OVE
 				uuid = SecureRandom.hex
 
 				chunks.each do | chunk |
-					driver.store_file uuid, chunk.path
+					storage_engine.store_file uuid, chunk.path
 				end
-				file_system.store_metadata uuid, data
+				storage_engine.store_metadata uuid, data
 				uuid
 			end
 
 			# Returns a list of chunks stored under the provided unique ID on the disk
 			def retrieve uuid
-				files = file_system.find_files(uuid)
+				files = storage_engine.find_files(uuid)
 				chunks = files.select { |c| c.end_with? '.ts' }
+				[chunks, storage_engine.find_metadata(uuid), storage_engine.find_expiry(uuid)]
 			end
+
+			 private
+
+			def storage_engine
+				# inject our stubbed storage engine here
+				file_system
+			end
+
 		end
 	end
 end
