@@ -25,7 +25,7 @@ module OVE
 				halt 404 unless service
 
 				importer = OVE::Import::Import.instance
-				imported = importer.import source, start_time * 1000.0, end_time * 1000.0
+				data = importer.import source, start_time * 1000.0, end_time * 1000.0
 
 				send_json(
 					success: 1,
