@@ -2,25 +2,19 @@ import React, { Component } from 'react';
 
 import TimelineComponent from '../components/Timeline';
 
+import AbsoluteTimePicker from '../components/AbsoluteTimePicker';
+
+import Video from '../components/Video';
+import VideoControls from '../components/VideoControls';
+
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import Switch from '@material-ui/core/Switch';
-import FormGroup from '@material-ui/core/FormGroup';
-import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
 
-
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const styles = theme => ({
 	button: {
@@ -31,108 +25,203 @@ const styles = theme => ({
 
 class Import extends Component {
 
+	state = {
+		currentTime: 0,
+		ready: false,
+		video: {
+			playing: false
+		},
+
+		segmentStart: -1,
+		segmentEnd: -1
+	}
+
 	componentWillMount () {
 
 		let topOfHour = (Date.now() / 1000 | 0); topOfHour = topOfHour - (topOfHour % 3600);
 
-		// Show 5 minutes initially in our window 
-		let topOfHourPlus = topOfHour + 300;
+		this.start = topOfHour - 3600*5;
 
-		this.start = topOfHour;
-		this.end = topOfHourPlus;
+		setInterval(() => {
 
+			if (!this.video) {
+				return;
+			}
+
+			if (this.video.getTimecode() == 0) {
+				return;
+			}
+
+			let ready = this.state.ready
+
+			this.setState({
+				currentTime: this.video.getTimecode(),
+				currentEdge: this.video.getEdgeTimecode(),
+				ready: true
+			}, () => ready || this.videoLoaded())
+
+		}, 100);
+
+	}
+
+	// videoLoaded is called when the video has loaded sufficiently that we can begin
+	videoLoaded () {
+		this.setState({
+			segmentStart: (Date.now() / 1000 | 0) - 660,
+			segmentEnd: (Date.now() / 1000 | 0) - 60
+		})
+	}
+
+	setVideo (video) {
+		this.video = video;
+	}
+
+	onTimelineUpdate (timecode) {
+		this.video.setTimecode(timecode);
+	}
+
+	setVideoState (state) {
+		this.setState({
+			video: state
+		})
+	}
+
+	setSegmentStart (value) {
+
+		console.log('request set segment start', value)
+
+		let segmentEnd = this.state.segmentEnd;
+
+		if (segmentEnd <= value) {
+			segmentEnd = value + 30;
+		}
+
+		this.setState({
+			segmentStart: value,
+			segmentEnd: segmentEnd
+		})
+
+	}
+
+	setSegmentEnd (value) {
+
+		let segmentStart = this.state.segmentStart;
+
+		if (segmentStart >= value) {
+			segmentStart = value - 30;
+		}
+
+		this.setState({
+			segmentStart: segmentStart,
+			segmentEnd: value
+		})
+
+	}
+
+	serialize () {
+		return {
+			name: this.state.name,
+			startTime: this.state.segmentStart,
+			endTime: this.state.segmentEnd
+		}
 	}
 
 	render () {
 		return (
 
-			<div class="fullpage">
+			<div className="fullpage">
 
-				<div class="video-container">
+				<div className="video-container">
 
-					<div class="video-player">
-						<video class="video-player-video-element" controls />
+					<div className="video-player fit">
+						<div className="video-player-video-element">
+							<Video
+								ref={ (v) => this.setVideo(v) }
+								onStateChange={ (state) => this.setVideoState(state) }
+								hls={ true }
+								src="/api/ingest/video/preview.m3u8?start_time=1545354123&end_time=99999999999"
+								segmentStart = { this.state.segmentStart }
+								segmentEnd = { this.state.segmentEnd } />
+						</div>
 					</div>
 
-					<div class="video-controls">
-						PLAY / PAUSE / FORWARD / BACKWARDS 
-					</div>
+					<VideoControls video={ this.video } videoState={ this.state.video } />
 
-					<div class="video-timeline">
+					<div className="video-timeline">
 						
-						<TimelineComponent start={this.start} end={this.end} initialOffset={ this.start + 5 } />
+						<TimelineComponent
+							start={this.start}
+							end={this.state.currentEdge }
+							offset={ this.state.currentTime }
+							onChange={ this.onTimelineUpdate.bind(this) }
+							segmentStart = { this.state.segmentStart }
+							segmentEnd = { this.state.segmentEnd }
+
+							autoUpdateViewport={ true || this.state.video.playing }
+
+							onSegmentStart={ this.setSegmentStart.bind(this) }
+							onSegmentEnd={ this.setSegmentEnd.bind(this) }
+							initialOffset={ 0 } />
 
 					</div>
 
 				</div>
 
-				<div class="video-side">
+				<div className="video-side">
 
-					<div class="video-selector">
+					<div className="video-selector">
 
 						<AppBar position="static">
 							<Toolbar>
 								<div style={{ flex: 1 }}></div>
-								<IconButton color="inherit" aria-label="Menu">
-									S
+								<IconButton color="inherit" aria-label="Save For Later">
+									<FontAwesomeIcon icon="save" />
+								</IconButton>
+
+								<IconButton color="inherit" aria-label="Go">
+									<FontAwesomeIcon icon="step-forward" />
 								</IconButton>
 							</Toolbar>
 						</AppBar>
 
-						<h1>Import Wizard.</h1>
+						<div className="side-content">
 
-						<h3>1. Find Content</h3>
+							<h1>Import Wizard.</h1>
 
-						<Button variant="outlined" color="secondary">
-							Search By Time
-						</Button>
+							<h3>1. Find Content</h3>
 
-						<Button variant="outlined" color="secondary">
-							Search By Clip
-						</Button>
+							<Button variant="contained" color="secondary">
+								<FontAwesomeIcon icon="stopwatch" />{' '} Search By Time
+							</Button>
 
-						<br /><br />
-						<hr /><br />
+							<Button variant="contained" color="secondary">
+								<FontAwesomeIcon icon="file-video" /> Search By Clip
+							</Button>
 
-						<Button variant="outlined" color="primary">
-							Save For Later
-						</Button>
+							<br /><br />
+							<hr /><br />
 
-						<br /><br />
+							<Button variant="outlined" color="primary">
+								Save For Later
+							</Button>
 
-						<h3>2. Options</h3>
+							<br /><br />
 
-<RadioGroup
-            aria-label="gender"
-            name="gender2"
-            style={{ color: '#FFF' }}
-          >
-            <FormControlLabel
-              value="female"
-              control={<Radio color="primary" />}
-              label="Female"
-              labelPlacement="start"
-            />
-            <FormControlLabel
-              value="male"
-              control={<Radio color="primary" />}
-              label="Male"
-              labelPlacement="start"
-            />
-            <FormControlLabel
-              value="other"
-              control={<Radio color="primary" />}
-              label="Other"
-              labelPlacement="start"
-            />
-            <FormControlLabel
-              value="disabled"
-              disabled
-              control={<Radio />}
-              label="(Disabled option)"
-              labelPlacement="start"
-            />
-          </RadioGroup>
+							<h3>2. Fine Tune</h3>
+
+							<AbsoluteTimePicker
+								label="Start"
+								video={ this.video }
+								onChange={ this.setSegmentStart.bind(this) }
+								value={ this.state.segmentStart } />
+
+							<AbsoluteTimePicker
+								label="End"
+								video={ this.video }
+								onChange={ this.setSegmentEnd.bind(this) }
+								value={ this.state.segmentEnd } />
+
+						</div>
 
 					</div>
 
