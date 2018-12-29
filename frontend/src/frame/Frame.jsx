@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import TimelineComponent from '../components/Timeline';
 
 import Video from '../components/Video';
+import VideoControls from '../components/VideoControls';
 
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -71,6 +72,9 @@ class Frame extends Component {
 		'layers.logo': true,
 		'layers.background': false,
 		'layers.foreground': true,
+		video: {
+			playing: false
+		}
 	}
 
 	componentWillMount () {
@@ -185,7 +189,7 @@ class Frame extends Component {
 
 	}
 
-	onChange(control, modifier, event) {
+	onValueChange(control, modifier, event) {
 
 		let value = (event.target.type == 'checkbox') ? event.target.checked : event.target.value;
 
@@ -242,6 +246,13 @@ class Frame extends Component {
 			return false;
 		}
 		this.video = video;
+		this.forceUpdate();
+	}
+
+	setVideoState (state) {
+		this.setState({
+			video: state
+		})
 	}
 
 	render () {
@@ -255,7 +266,14 @@ class Frame extends Component {
 
 						<canvas ref={ (r) => this.setLayer(r, 'background') } className="layer-0" style={ this.getStyleForLayer('background') } />
 						<div className={ this.state['layers.background'] ? "layer-1 video-layer" : "layer-1 video-layer video-layer-stretch"} >
-							<Video ref={ (v) => this.setVideo(v) } src="/video/test.mp4" style={ this.getStyleForLayer('video') } />
+							<Video
+								ref={ (v) => this.setVideo(v) }
+								src="/video/test.mp4"
+								style={ this.getStyleForLayer('video') } 
+								onStateChange={ (state) => this.setVideoState(state) }
+								segmentStart = { 0 }
+								segmentEnd = { 10 } />
+
 						</div>
 						<canvas ref={ (r) => this.setLayer(r, 'text') } className="layer-2" style={ this.getStyleForLayer('text') } />
 						<canvas ref={ (r) => this.setLayer(r, 'logo') } className="layer-3" style={ this.getStyleForLayer('logo') } />
@@ -263,7 +281,7 @@ class Frame extends Component {
 
 					</div>
 
-					Test
+					<VideoControls video={ this.video } videoState={ this.state.video } />
 
 				</div>
 
@@ -289,20 +307,20 @@ class Frame extends Component {
 
 							<FormControlLabel
 								control={<Checkbox checked={ this.state['layers.logo'] }
-								onChange={ this.onChange.bind(this, 'layers.logo', null) }
+								onChange={ this.onValueChange.bind(this, 'layers.logo', null) }
 								value="true" />} label="Show Logo" />
 
 							<h2 class="side-title">Text Settings</h2>
 
 							<TextField
 								value={ this.state.line1 }
-								onChange={ this.onChange.bind(this, 'line1', null) }
+								onChange={ this.onValueChange.bind(this, 'line1', null) }
 								label="Show Title Text (Top Line)"
 								style={{ width: '100%'}} />
 
 							<TextField
 								value={ this.state.line2 }
-								onChange={ this.onChange.bind(this, 'line2', null) }
+								onChange={ this.onValueChange.bind(this, 'line2', null) }
 								label="Segment Title Text (Bottom Line)"
 								style={{ width: '100%'}} />
 
@@ -310,7 +328,7 @@ class Frame extends Component {
 
 							<FormControlLabel
 								control={<Checkbox checked={ this.state['layers.foreground'] }
-								onChange={ this.onChange.bind(this, 'layers.foreground', null) }
+								onChange={ this.onValueChange.bind(this, 'layers.foreground', null) }
 								value="true" />} label="Foreground Graphics" />
 							<Button color="secondary">
 								Browse
@@ -320,7 +338,7 @@ class Frame extends Component {
 							<p class="label-hint">(Check me to enable the graphics in the theme that can overlap the video)</p>
 
 							<RadioGroup
-								onChange={ this.onChange.bind(this, 'layers.background', (value) => value == 'true')}
+								onChange={ this.onValueChange.bind(this, 'layers.background', (value) => value == 'true')}
 								value={ this.state['layers.background'] }>
 
 								<FormControlLabel control={ <Radio color="primary" /> } label={ <div>Background Graphic&nbsp;&nbsp;
