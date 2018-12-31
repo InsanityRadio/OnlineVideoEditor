@@ -27,6 +27,11 @@ module OVE
 							data << "#EXT-X-PROGRAM-DATE-TIME:#{new_time.iso8601}\n"
 						end
 
+						if @manifest.header.length > 0
+							data += @manifest.header.join("\n")
+							data += "\n"
+						end
+
 						data << "#EXTINF:#{chunk.length.to_f}\n"
 						data << chunk.path + "\n"
 

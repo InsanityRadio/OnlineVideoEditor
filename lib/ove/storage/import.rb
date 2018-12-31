@@ -4,6 +4,10 @@ module OVE
 	module Storage
 		# Persistently stores ingest system data (i.e. HLS chunks and indexes)
 		class Import < Base
+			def initialize working_directory = '/video'
+				@working_directory = working_directory
+			end
+
 			# @return id [String] Unique identifier to identify this 
 			def store chunks, data = {}
 				# 1. generate UUID
@@ -24,16 +28,25 @@ module OVE
 			def retrieve uuid
 				files = storage_engine.find_files(uuid)
 				chunks = files.select { |c| c.end_with? '.ts' }
-				[chunks, storage_engine.find_metadata(uuid), storage_engine.find_expiry(uuid)]
+
+				metadata = storage_engine.find_metadata(uuid)
+				metadata[:uuid] = uuid
+
+				[chunks, metadata, storage_engine.find_expiry(uuid)]
+			end
+
+			# Find all categories (directories on disk) and retrieve data for them
+			def all
+				categories = storage_engine.find_categories.select { |s| s.match /[a-zA-Z0-9]+/ }
+
+				categories.map { |uuid| retrieve(uuid) }
 			end
 
 			 private
 
 			def storage_engine
-				# inject our stubbed storage engine here
 				file_system
 			end
-
 		end
 	end
 end

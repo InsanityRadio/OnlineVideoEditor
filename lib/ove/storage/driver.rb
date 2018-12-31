@@ -78,17 +78,25 @@ module OVE
 					end
 				end
 
+				def find_categories
+					FileUtils.cd(@root) do
+						return Dir.glob('**/').select { |category|
+							File.exist?(resolve(category, 'expires.dat'))
+						}.map { |category| category.tr '/', '' }
+					end
+				end
+
 				# Return a list of files 
 				def find_files category
-					file_path = @root + '/' + resolve(category, '')
-					FileUtils.glob(file_path)
+					file_path = @root + '/' + resolve(category, '*')
+					Dir.glob(file_path)
 				end
 
 				# Return the metadata we're storing against this category
 				def find_metadata category
 					file_path = @root + '/' + resolve(category, 'data.json')
 					begin
-						File.exist?(file_path) ? JSON.parse(File.read(file_path)) : nil
+						File.exist?(file_path) ? JSON.parse(File.read(file_path), symbolize_names: true) : nil
 					rescue JSON::ParserError
 						nil
 					end
@@ -98,9 +106,9 @@ module OVE
 					FileUtils.cd(@root) do
 						path = resolve(category, 'expires.dat')
 
-						return false if !File.exist?(expiry_dat)
+						return false if !File.exist?(path)
 
-						return File.read(expiry_dat).to_i 
+						return File.read(path).to_i 
 					end
 				end
 

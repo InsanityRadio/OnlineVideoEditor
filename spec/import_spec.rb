@@ -56,7 +56,7 @@ describe OVE::Import::Import do
 
 			 private
 
-			def storage_engine
+			def storage_engine source
 				# inject our stubbed storage engine here
 				@_test_storage
 			end
@@ -104,8 +104,8 @@ describe OVE::Import::Import do
 
 			imported = @importer.import @source, 7.000, 18.000
 
-			p imported
-
+			expect(imported.chunks.length).to eq(3)
+			expect(imported.chunks[0].path).to eq('dummy-5.ts')
 		end
 	end
 end

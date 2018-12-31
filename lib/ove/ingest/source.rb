@@ -2,7 +2,7 @@ module OVE
 	module Ingest
 		# Source contains all the methods required to access a video source at a high level
 		class Source
-			attr_reader :start_time, :end_time, :service
+			attr_reader :start_time, :end_time, :service, :root
 
 			# Creates a new source with a root path and service name.
 			# This will scan the root path for HLS chunks belonging to that service, and will
