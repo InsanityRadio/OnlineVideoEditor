@@ -15,10 +15,11 @@ module OVE
 			end
 
 			attr_reader :text
-			attr_reader :target_duration, :version, :media_sequence, :chunks
+			attr_reader :target_duration, :version, :media_sequence, :chunks, :header
 
 			def initialize(data_string = nil)
 				@text = data_string
+				@header = []
 
 				if data_string != nil
 					initialize_with_data_string
@@ -37,6 +38,10 @@ module OVE
 				@target_duration = parser.target_duration
 				@version = parser.version
 				@media_sequence = parser.media_sequence
+			end
+
+			def header= headers
+				@header = headers
 			end
 
 			def chunks=(new_chunks)

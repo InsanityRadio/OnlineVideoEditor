@@ -201,7 +201,7 @@ class Import extends Component {
 							<br /><br />
 							<hr /><br />
 
-							<Button variant="outlined" color="primary">
+							<Button variant="outlined" color="primary" onClick={ () => console.log(this.serialize()) }>
 								Save For Later
 							</Button>
 

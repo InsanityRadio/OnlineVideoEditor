@@ -7,6 +7,7 @@ require 'ove'
 # This 'picks' the services that we want to expose/enable
 class Application < Sinatra::Application
 	use OVE::Service::Ingest
+	use OVE::Service::Import
 	use OVE::Service::Ingest::Test if ENV['DEBUG'] == '1'
 end
 
