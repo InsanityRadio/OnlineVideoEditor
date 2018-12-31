@@ -16,6 +16,11 @@ module OVE
 						#EXT-X-PROGRAM-DATE-TIME:#{@manifest.start_date.iso8601}
 					HEADER
 
+					if @manifest.header.length > 0
+						data += @manifest.header.join("\n")
+						data += "\n"
+					end
+
 					last_chunk = @manifest.chunks[0]
 
 					@manifest.chunks.each do |chunk|
@@ -25,11 +30,6 @@ module OVE
 							new_time = Time.at chunk.time / 1000.0
 							data << "#EXT-X-DISCONTINUITY\n"
 							data << "#EXT-X-PROGRAM-DATE-TIME:#{new_time.iso8601}\n"
-						end
-
-						if @manifest.header.length > 0
-							data += @manifest.header.join("\n")
-							data += "\n"
 						end
 
 						data << "#EXTINF:#{chunk.length.to_f}\n"
