@@ -32,7 +32,7 @@ module OVE
 				metadata = storage_engine.find_metadata(uuid)
 				metadata[:uuid] = uuid
 
-				[chunks, metadata, storage_engine.find_expiry(uuid)]
+				[chunks, metadata, storage_engine.find_expiry(uuid), storage_engine.resolve(uuid, '', true)]
 			end
 
 			# Find all categories (directories on disk) and retrieve data for them

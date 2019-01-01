@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'fakeredis'
+gem 'falcon'
 gem 'mysql2'
 gem 'redis'
 gem 'redis-namespace'
@@ -9,3 +10,4 @@ gem 'rspec'
 gem 'rubocop'
 gem 'sinatra'
 gem 'sinatra-activerecord'
+gem 'sinatra-contrib'

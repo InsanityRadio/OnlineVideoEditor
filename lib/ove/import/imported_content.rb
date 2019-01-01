@@ -3,9 +3,10 @@ module OVE
 		# A simple interface to, given a source and a start/end time, store it on the disk.
 		class ImportedContent
 
-			attr_reader :uuid, :start_time, :end_time, :real_start_time, :real_end_time, :chunks
+			attr_reader :uuid, :start_time, :end_time, :real_start_time, :real_end_time
+			attr_reader :chunks, :root_path
 
-			def initialize data, expiry
+			def initialize data, expiry, root_path
 				@uuid = data[:uuid]
 				@start_time = data[:start_time]
 				@end_time = data[:end_time]
@@ -14,6 +15,7 @@ module OVE
 				@chunks = data[:chunks].sort_by { |chunk| chunk.chunk_id }
 
 				@expiry = expiry
+				@root_path = root_path
 			end
 
 			def serialize millisec = true
@@ -42,6 +44,12 @@ module OVE
 				]
 				hls_generator.chunks = @chunks
 				hls_generator.to_s
+			end
+
+			def generate_mp4
+				paths = @chunks.map { |chunk| @root_path + chunk.path }
+
+				OVE::Transmux::TSMP4.ts_to_mp4(paths)
 			end
 
 		end

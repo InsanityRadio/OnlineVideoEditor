@@ -1,4 +1,5 @@
 require 'securerandom'
+require 'sinatra/streaming'
 
 module OVE
 	module Service
@@ -97,6 +98,48 @@ module OVE
 				content_type 'application/x-mpegURL'
 
 				import.generate_hls
+			end
+
+			get '/:service/import/:id/download.mp4' do |service, id|
+				my_sources = OVE::Ingest::SourceProvider.instance.sources
+				source = my_sources.find { |s| s.service == service }
+
+				halt 404 unless service
+
+				importer = OVE::Import::Import.instance
+				import = importer.find_by_id source, id
+
+				halt 404 unless import
+
+				out_path = nil
+
+				begin
+
+					out_path, stderr, wait_thr = import.generate_mp4
+
+					halt 500 unless wait_thr.value.success?
+
+					# Write headers to make file download easier.
+					content_type 'application/x-mpegURL'
+					response.header['Content-Length'] = File.size(out_path)
+
+					file = File.open(out_path, 'rb')
+
+					stream do | out |
+						until file.closed? or out.closed?
+							data = file.read(4096)
+							break if data == nil
+
+							out << data
+						end
+						file.close rescue nil
+						out.close rescue nil
+					end
+
+				ensure
+					File.unlink(out_path) if out_path != nil
+				end
+
 			end
 
 		end

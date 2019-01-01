@@ -88,13 +88,13 @@ module OVE
 
 				# Return a list of files 
 				def find_files category
-					file_path = @root + '/' + resolve(category, '*')
+					file_path = resolve(category, '*', true)
 					Dir.glob(file_path)
 				end
 
 				# Return the metadata we're storing against this category
 				def find_metadata category
-					file_path = @root + '/' + resolve(category, 'data.json')
+					file_path = resolve(category, 'data.json', true)
 					begin
 						File.exist?(file_path) ? JSON.parse(File.read(file_path), symbolize_names: true) : nil
 					rescue JSON::ParserError
@@ -103,13 +103,11 @@ module OVE
 				end
 
 				def find_expiry category
-					FileUtils.cd(@root) do
-						path = resolve(category, 'expires.dat')
+					path = resolve(category, 'expires.dat', true)
 
-						return false if !File.exist?(path)
+					return false if !File.exist?(path)
 
-						return File.read(path).to_i 
-					end
+					File.read(path).to_i 
 				end
 
 				# Deletes an entire category. May be useful for cleaning up.
@@ -133,9 +131,13 @@ module OVE
 					end
 				end
 
-				def resolve category, file
+				def resolve category, file, full = false
 					raise "Invalid category name specified" unless category.match /[a-zA-Z0-9\_\-]+/
-					category + '/' + file
+					if full
+						@root + '/' + category + '/' + file
+					else
+						category + '/' + file
+					end
 				end
 
 			end

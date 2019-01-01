@@ -58,7 +58,7 @@ module OVE
 				data = category[1]
 				data[:chunks] = deserialize_chunks(data[:chunk_data])
 
-				ImportedContent.new data, category[2]
+				ImportedContent.new data, category[2], category[3]
 			end
 
 			# Convert an array of paths into valid chunks
