@@ -55,7 +55,7 @@
 }
 
 .side-content {
-	padding: 10px;
+	padding: 20px;
 }
 
 .timeline-canvas {
@@ -145,4 +145,12 @@
 
 .absolute-time-button-array {
 	margin-top: 16px;
+}
+
+.side-content h3 {
+	margin: 15px 0;
+}
+
+.side-content .padded-button {
+	margin: 10px 0;
 }

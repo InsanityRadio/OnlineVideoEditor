@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 
-import TimelineComponent from '../components/Timeline';
+import AirTower from '../network/AirTower';
 
 import AbsoluteTimePicker from '../components/AbsoluteTimePicker';
-
+import TimelineComponent from '../components/Timeline';
 import Video from '../components/Video';
 import VideoControls from '../components/VideoControls';
 
@@ -42,7 +42,7 @@ class Import extends Component {
 
 		this.start = topOfHour - 3600*5;
 
-		setInterval(() => {
+		this.interval = setInterval(() => {
 
 			if (!this.video) {
 				return;
@@ -62,6 +62,14 @@ class Import extends Component {
 
 		}, 100);
 
+	}
+
+	componentWillUnmount () {
+		clearInterval(this.interval);
+	}
+
+	getServiceName () {
+		return 'video';
 	}
 
 	// videoLoaded is called when the video has loaded sufficiently that we can begin
@@ -126,6 +134,40 @@ class Import extends Component {
 		}
 	}
 
+	/**
+	 * Import the selected video and return a promise that resolves once complete.
+	 */
+	importVideo () {
+		let data = this.serialize();
+		let airTower = AirTower.getInstance();
+
+		return airTower.ingest.importVideo(this.getServiceName(), data.startTime, data.endTime);
+	}
+
+	/**
+	 * Imports video and, upon completion, redirects to the homepage
+	 */
+	saveForLater () {
+		this.importVideo()
+			.then((importObj) => {
+				console.log('IMPORT OBJECT', importObj)
+			});
+	}
+
+	/**
+	 * Imports video and, upon completion, redirects to the editor
+	 */
+	saveAndAdvance () {
+		this.importVideo()
+			.then((importObj) => {
+				console.log('IMPORT OBJECT 2', importObj)
+			});
+	}
+
+	cancel () {
+
+	}
+
 	render () {
 		return (
 
@@ -139,7 +181,7 @@ class Import extends Component {
 								ref={ (v) => this.setVideo(v) }
 								onStateChange={ (state) => this.setVideoState(state) }
 								hls={ true }
-								src="/api/ingest/video/preview.m3u8?start_time=1545354123&end_time=99999999999"
+								src={ "/api/ingest/" + this.getServiceName() + "/preview.m3u8?start_time=1545354123&end_time=99999999999" }
 								segmentStart = { this.state.segmentStart }
 								segmentEnd = { this.state.segmentEnd } />
 						</div>
@@ -150,8 +192,8 @@ class Import extends Component {
 					<div className="video-timeline">
 						
 						<TimelineComponent
-							start={this.start}
-							end={this.state.currentEdge }
+							start={ this.start }
+							end={ this.state.currentEdge }
 							offset={ this.state.currentTime }
 							onChange={ this.onTimelineUpdate.bind(this) }
 							segmentStart = { this.state.segmentStart }
@@ -164,46 +206,39 @@ class Import extends Component {
 							initialOffset={ 0 } />
 
 					</div>
-
 				</div>
 
 				<div className="video-side">
-
 					<div className="video-selector">
 
 						<AppBar position="static">
 							<Toolbar>
-								<div style={{ flex: 1 }}></div>
-								<IconButton color="inherit" aria-label="Save For Later">
-									<FontAwesomeIcon icon="save" />
+								<IconButton
+										color="inherit"
+										aria-label="Save For Later"
+										onClick={ this.cancel.bind(this) } >
+									<FontAwesomeIcon icon="long-arrow-alt-left" />
 								</IconButton>
 
-								<IconButton color="inherit" aria-label="Go">
-									<FontAwesomeIcon icon="step-forward" />
-								</IconButton>
+								<div style={{ flex: 1 }}></div>
 							</Toolbar>
 						</AppBar>
 
-						<div className="side-content">
+						<div className="side-content import-wizard">
 
 							<h1>Import Wizard.</h1>
 
 							<h3>1. Find Content</h3>
 
-							<Button variant="contained" color="secondary">
-								<FontAwesomeIcon icon="stopwatch" />{' '} Search By Time
-							</Button>
+							<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+								<Button variant="contained" color="secondary">
+									<FontAwesomeIcon icon="stopwatch" />{' '} Search By Time
+								</Button>
 
-							<Button variant="contained" color="secondary">
-								<FontAwesomeIcon icon="file-video" /> Search By Clip
-							</Button>
-
-							<br /><br />
-							<hr /><br />
-
-							<Button variant="outlined" color="primary" onClick={ () => console.log(this.serialize()) }>
-								Save For Later
-							</Button>
+								<Button variant="contained" color="secondary">
+									<FontAwesomeIcon icon="file-video" /> Search By Clip
+								</Button>
+							</div>
 
 							<br /><br />
 
@@ -221,13 +256,31 @@ class Import extends Component {
 								onChange={ this.setSegmentEnd.bind(this) }
 								value={ this.state.segmentEnd } />
 
+							<br /><br />
+
+							<h3>3. Import</h3>
+							<Button
+									variant="contained"
+									color="primary"
+									fullWidth={ true }
+									className="padded-button"
+									onClick={ this.saveForLater.bind(this) }>
+								Save For Later
+							</Button>
+
+							<Button
+									variant="contained"
+									color="secondary"
+									fullWidth={ true }
+									className="padded-button"
+									onClick={ this.saveAndAdvance.bind(this) }>
+								Next: Edit Video
+							</Button>
+
+
 						</div>
-
 					</div>
-
-
 				</div>
-
 			</div>
 
 		);
