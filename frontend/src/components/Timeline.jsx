@@ -199,7 +199,8 @@ class SegmentTerminus extends Draggable {
 	}
 
 	setPositionAndUpdate (position) {
-		this.timeline.props[this.getDirection() == 'start' ? 'onSegmentStart' : 'onSegmentEnd'](position);
+		let prop = this.timeline.props[this.getDirection() == 'start' ? 'onSegmentStart' : 'onSegmentEnd'];
+		prop && prop(position);
 	}
 
 	getDirection () {
@@ -586,11 +587,11 @@ class Timeline extends Component {
 			this.draggingTimeline = false;
 			this.dragging = this.playhead;
 			this.playhead.startDrag();
-		}  else if (this.segments.start.isHit(mousePosition)) {
+		}  else if (this.segments.start.isHit(mousePosition) && !this.props.readOnly) {
 			this.draggingTimeline = false;
 			this.dragging = this.segments.start;
 			this.segments.start.startDrag();
-		} else if (this.segments.end.isHit(mousePosition)) {
+		} else if (this.segments.end.isHit(mousePosition) && !this.props.readOnly) {
 			this.draggingTimeline = false;
 			this.dragging = this.segments.end;
 			this.segments.end.startDrag();

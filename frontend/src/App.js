@@ -5,9 +5,11 @@ import { BrowserRouter } from 'react-router-dom';
 import './App.css';
 import logo from './logo.svg';
 
+import EditComponent from './edit/Edit';
 import HomeComponent from './home/Home';
 import FrameComponent from './frame/Frame';
 import ImportComponent from './import/Import';
+import ImportsComponent from './imports/Imports';
 
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 
@@ -52,9 +54,11 @@ class App extends Component {
 		return (
 			<BrowserRouter>
 				<MuiThemeProvider theme={theme}>
-					<Route path="/" component={ HomeComponent } />
+					<Route exact path="/" component={ HomeComponent } />
 					<Route exact path="/import" component={ ImportComponent } />
-					<Route path="/import/:id/edit" component={ FrameComponent } />
+					<Route exact path="/imports" component={ ImportsComponent } />
+					<Route path="/import/:id/edit" component={ EditComponent } />
+					<Route path="/import/:id/edit/frame" component={ FrameComponent } />
 				</MuiThemeProvider>
 			</BrowserRouter>
 		);
