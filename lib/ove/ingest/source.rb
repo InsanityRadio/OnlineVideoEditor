@@ -38,6 +38,15 @@ module OVE
 				read_hls
 			end
 
+			# Find .TS files without JPG thumbnails and generate thumbnails
+			def thumbnail
+				files = scan_directory
+
+				files.each do |file|
+					Thumbnail.create(file)
+				end
+			end
+
 			# Get a list of all available chunks that exist on the disk.
 			def all_chunk_paths
 				storage_engine.chunks

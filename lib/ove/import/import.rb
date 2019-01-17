@@ -33,15 +33,16 @@ module OVE
 
 				data[:chunks] = chunks
 				data[:uuid] = uuid
-				ImportedContent.new data
+
+				from engine.retrieve(uuid)
 			end
 
 			def find_by_source source
 				from_list storage_engine(source).all
 			end
 
-			def find_by_id source, category_id
-				from storage_engine(source).retrieve(category_id)
+			def find_by_id source, uuid
+				from storage_engine(source).retrieve(uuid)
 			end
 
 			 private

@@ -19,6 +19,7 @@ module OVE
 
 				chunks.each do | chunk |
 					storage_engine.store_file uuid, chunk.path
+					storage_engine.store_file uuid, chunk.path + '.jpg'
 				end
 				storage_engine.store_metadata uuid, data
 				uuid
