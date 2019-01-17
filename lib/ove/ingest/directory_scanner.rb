@@ -10,9 +10,9 @@ module OVE
 			def scan
 				files = []
 
-				Dir.chdir(@root) do
-					files = Dir.glob(@service + '-*.ts')
-				end
+				Dir.chdir(@root)
+
+				files = Dir.glob(@service + '-*.ts')
 
 				files
 			end

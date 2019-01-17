@@ -30,6 +30,14 @@ describe OVE::Import::Import do
 			@chunks[uuid][:chunks]
 		end
 
+		def find_expiry uuid
+			Time.now.to_i + 10
+		end
+
+		def resolve category, file, full = false
+			(full ? '/' : '') + category + '/' + file
+		end
+
 		 private
 
 		def storage_engine
