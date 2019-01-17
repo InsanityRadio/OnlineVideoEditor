@@ -13,19 +13,22 @@
 ActiveRecord::Schema.define(version: 2019_01_17_195700) do
 
   create_table "imports", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
-    t.bigint "created_by_id"
-    t.index ["created_by_id"], name: "index_imports_on_created_by_id"
+    t.bigint "user_id"
+    t.string "uuid"
+    t.string "service"
+    t.string "title"
+    t.index ["user_id"], name: "index_imports_on_user_id"
   end
 
   create_table "shares", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.bigint "video_id"
-    t.bigint "created_by_id"
+    t.bigint "user_id"
     t.string "platform"
     t.string "title"
     t.text "description"
     t.datetime "publish_on"
     t.boolean "shared", default: false
-    t.index ["created_by_id"], name: "index_shares_on_created_by_id"
+    t.index ["user_id"], name: "index_shares_on_user_id"
     t.index ["video_id"], name: "index_shares_on_video_id"
   end
 
@@ -39,14 +42,13 @@ ActiveRecord::Schema.define(version: 2019_01_17_195700) do
 
   create_table "videos", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.bigint "import_id"
-    t.bigint "created_by_id"
-    t.string "type", default: "default"
+    t.bigint "user_id"
+    t.string "video_type", default: "default"
     t.text "configuration"
-    t.index ["created_by_id"], name: "index_videos_on_created_by_id"
+    t.boolean "queued", default: false
+    t.boolean "rendered", default: false
     t.index ["import_id"], name: "index_videos_on_import_id"
+    t.index ["user_id"], name: "index_videos_on_user_id"
   end
 
-  add_foreign_key "imports", "users", column: "created_by_id"
-  add_foreign_key "shares", "users", column: "created_by_id"
-  add_foreign_key "videos", "users", column: "created_by_id"
 end

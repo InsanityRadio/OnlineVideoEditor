@@ -11,21 +11,24 @@ class Bootstrap < ActiveRecord::Migration[5.2]
 		end
 
 		create_table(:imports) do |t|
-			t.references :created_by, index: true, foreign_key: {to_table: :users}
+			t.references :user
+			t.string :uuid
+			t.string :service
+			t.string :title
 		end
 
 		create_table(:videos) do |t|
 			t.references :import
-			t.references :created_by, index: true, foreign_key: {to_table: :users}
-
-			t.string :type, default: 'default'
+			t.references :user
+			t.string :video_type, default: 'default'
 			t.text :configuration
+			t.boolean :queued, default: false
+			t.boolean :rendered, default: false
 		end
 
 		create_table(:shares) do |t|
 			t.references :video
-			t.references :created_by, index: true, foreign_key: {to_table: :users}
-
+			t.references :user
 			t.string :platform
 			t.string :title
 			t.text :description
