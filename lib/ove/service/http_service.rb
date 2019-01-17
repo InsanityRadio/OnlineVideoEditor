@@ -1,6 +1,19 @@
 require 'sinatra/activerecord'
 require 'sinatra'
 
+if ENV['RACK_DB_NAME']
+	set :database, {
+		adapter: "mysql2",
+		encoding: "utf8",
+		reconnect: true,
+		host: (ENV['RACK_DB_HOST'] or 'localhost'),
+		port: (ENV['RACK_DB_PORT'].to_i or 3306),
+		database: ENV['RACK_DB_NAME'],
+		username: (ENV['RACK_DB_USER'] or 'root'),
+		password: (ENV['RACK_DB_PASS'] or '')
+	}
+end
+
 module OVE
 	module Service
 		# The base class upon which all HTTP services can be constructed.

@@ -73,6 +73,7 @@ GEM
     rack-protection (2.0.4)
       rack
     rainbow (3.0.0)
+    rake (12.3.2)
     redis (4.0.3)
     redis-namespace (1.6.0)
       redis (>= 3.0.4)
@@ -141,6 +142,7 @@ DEPENDENCIES
   fakeredis
   falcon
   mysql2
+  rake
   redis
   redis-namespace
   reek
