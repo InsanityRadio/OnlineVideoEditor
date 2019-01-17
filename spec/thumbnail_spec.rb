@@ -37,6 +37,10 @@ describe OVE::Ingest::Thumbnail do
 			file_exists(file) and File.size(@tmpdir + '/' + file) > 0
 		end
 
+		def file_mtime(file)
+			File.mtime(@tmpdir + '/' + file)
+		end
+
 		it 'generates a thumbnail' do
 
 			expect(file_exists('test.ts')).to eq(true)
@@ -44,8 +48,16 @@ describe OVE::Ingest::Thumbnail do
 			OVE::Ingest::Thumbnail.create(@tmpdir + '/test.ts')
 
 			expect(file_exists_and_not_empty('test.ts.jpg')).to eq(true)
+			expect(file_mtime('test.ts')).to eq(file_mtime('test.ts.jpg'))
 
 		end
 
+		it 'refuses to run twice' do
+
+			expect(file_exists_and_not_empty('test.ts.jpg')).to eq(true)
+
+			expect(OVE::Ingest::Thumbnail.create(@tmpdir + '/test.ts')).to eq(false)
+
+		end
 	end
 end

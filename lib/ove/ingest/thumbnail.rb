@@ -14,7 +14,7 @@ module OVE
 
 			def create chunk_path
 				thumbnail_path = chunk_path + '.jpg'
-				return if !File.exist?(chunk_path) or File.exist?(thumbnail_path)
+				return false if !File.exist?(chunk_path) or File.exist?(thumbnail_path)
 				stdout, stderr, wait_thr = OVE::Transmux::Thumbnail.thumbnail(chunk_path)
 				return false unless wait_thr.value.success?
 
