@@ -7,6 +7,15 @@ module OVE
 		class Import < HTTPService
 			enable :sessions
 
+			configure do
+				enable :sessions
+				set :sessions,
+					:key => 'ove.session.ingest',
+					:httponly => true,
+					:expire_after => 31557600,
+					:secret => SecureRandom.hex
+			end
+
 			get '/test' do
 				'test'
 			end
