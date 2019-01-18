@@ -16,5 +16,5 @@ RUN gem install --http-proxy http://10.32.1.1:3128 bundler && bundle install --j
 
 COPY . ./
 
-CMD ["falcon", "serve", "-b", "http://0.0.0.0", "-p", "80", "-c", "./run_main"]
+CMD ["bash", "-c", "rake db:migrate; falcon serve -b http://0.0.0.0 -p 80 -c ./run_main"]
 

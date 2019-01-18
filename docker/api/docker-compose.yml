@@ -13,6 +13,9 @@ services:
     build:
       context: ../..
       dockerfile: ./docker/api/Dockerfile.http
+    depends_on:
+      - redis
+      - mariadb
     environment:
       - http_proxy
       - SERVICE=video
@@ -26,7 +29,21 @@ services:
       - video:/video
 
   redis:
-  	image: redis
+    image: redis
+
+  nginx:
+    image: nginx
+    environment:
+      - INGEST_URL=http://10.32.2.30
+    depends_on:
+      - http
+    ports:
+      - '1964:80'
+    build:
+      context: .
+      dockerfile: ./Dockerfile.nginx
+    volumes:
+      - video:/video
 
 volumes:
   video: 
