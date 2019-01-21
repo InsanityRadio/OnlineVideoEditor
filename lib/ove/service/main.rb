@@ -6,12 +6,11 @@ module OVE
 		class Main < HTTPService
 
 			configure do
-				enable :sessions
-				set :sessions,
+				use Rack::Session::Cookie,
 					:key => 'ove.session.core',
 					:httponly => true,
 					:expire_after => 31557600,
-					:secret => SecureRandom.hex
+					:secret => $config['global']['secret_key']
 			end
 
 			def authorize!

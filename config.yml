@@ -1,14 +1,14 @@
 global:
-	# This variable defines a secret key that allows nodes to validate that communication is valid.
-	secret_key: "LjHX7XqiC52vC6tl1e1v365hmIW8Sbdr6U07vw3lWIDWWNp44VtvHkC5HjqD16p"
+    # This variable defines a secret key that allows nodes to validate that communication is valid.
+    secret_key: "LjHX7XqiC52vC6tl1e1v365hmIW8Sbdr6U07vw3lWIDWWNp44VtvHkC5HjqD16p"
 
 ingest:
-	# This allows us to offload rendering onto another machine, provided this machine can access
-	#  this IP address. We use the above secret key to ensure security. 
-	public_uri: http://10.32.2.30
-	sources:
-		video:
-			root: /video
+    # This allows us to offload rendering onto another machine, provided this machine can access
+    #  this IP address. We use the above secret key to ensure security. 
+    public_uri: http://10.32.2.30
+    sources:
+        video:
+            root: /video
 
 main:
-	public_uri: http://10.32.2.31
+    public_uri: http://10.32.2.31

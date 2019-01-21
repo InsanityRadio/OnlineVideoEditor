@@ -11,8 +11,14 @@ export default class IAirTower {
 			options = {};
 		}
 
-		options.mode = 'no-cors';
 		options.credentials = 'same-origin';
+
+		if (!options.headers) {
+			options.headers = {}
+		}
+
+		// Setting this header prevents the JsonCsrf web application firewall rule being triggered
+		options.headers['X-Requested-With'] = 'XMLHttpRequest';
 
 		return fetch(root + url, options)
 			.then ((response) => this.checkResponse(response))

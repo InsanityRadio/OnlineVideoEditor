@@ -1,7 +1,12 @@
 #!/bin/env ruby
 $LOAD_PATH << 'lib'
 
+require 'yaml'
+$config = YAML::load(File.read('./config.yml'))
+
 require 'ove'
+
+$config = YAML::load(File.read('./config.yml'))
 
 my_services = OVE::Ingest::SourceProvider.instance.sources
 
