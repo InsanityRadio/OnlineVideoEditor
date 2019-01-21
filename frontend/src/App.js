@@ -9,7 +9,6 @@ import AirTower from './network/AirTower';
 
 import EditComponent from './edit/Edit';
 import HomeComponent from './home/Home';
-import FrameComponent from './frame/Frame';
 import ImportComponent from './import/Import';
 import ImportsComponent from './imports/Imports';
 
@@ -75,7 +74,6 @@ class App extends Component {
 					<Route exact path="/import" component={ ImportComponent } />
 					<Route exact path="/imports" component={ ImportsComponent } />
 					<Route path="/import/:id/edit" component={ EditComponent } />
-					<Route path="/import/:id/edit/frame" component={ FrameComponent } />
 				</MuiThemeProvider>
 			</BrowserRouter>
 		);

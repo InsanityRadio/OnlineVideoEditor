@@ -123,7 +123,7 @@ module OVE
 
 				halt 405 if video.queued or video.rendered
 
-				video.configuration = configuration
+				video.configuration = configuration if configuration != nil
 				video.save
 
 				send_json(
