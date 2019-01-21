@@ -1,5 +1,5 @@
 require 'securerandom'
-ap
+
 module OVE
 	module Service
 		# 
@@ -157,7 +157,7 @@ module OVE
 					import: import.to_h
 				)
 			end
-			
+
 			post '/import/:uuid/:video_id/render' do |uuid, video_id|
 				authorize!
 
