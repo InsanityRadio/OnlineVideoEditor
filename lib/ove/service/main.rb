@@ -1,5 +1,5 @@
 require 'securerandom'
-
+ap
 module OVE
 	module Service
 		# 
@@ -113,10 +113,21 @@ module OVE
 				)
 			end
 
+			get '/import/:uuid/' do |uuid|
+				authorize!
+
+				import = Model::Import.find_by(uuid: uuid)
+
+				send_json(
+					success: 1,
+					import: import.to_h
+				)
+			end
+
 			post '/import/:uuid/:video_id/save' do |uuid, video_id|
 				authorize!
 
-				video = Model::Video.find_by(video_id)
+				video = Model::Video.find_by(id: video_id)
 
 				configuration = params['configuration']
 
@@ -131,6 +142,22 @@ module OVE
 				)
 			end
 
+			post '/import/:uuid/:video_id/delete' do |uuid, video_id|
+				authorize!
+
+				video = Model::Video.find_by(id: video_id)
+				import = video.import
+
+				halt 405 if video.queued or video.rendered
+
+				video.destroy
+
+				send_json(
+					success: 1,
+					import: import.to_h
+				)
+			end
+			
 			post '/import/:uuid/:video_id/render' do |uuid, video_id|
 				authorize!
 
