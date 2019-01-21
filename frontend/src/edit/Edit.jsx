@@ -4,8 +4,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 
 import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
+import TextField from '@material-ui/core/TextField';
+import Toolbar from '@material-ui/core/Toolbar';
 
 import AirTower from '../network/AirTower';
 
@@ -75,7 +76,25 @@ class Edit extends Component {
 				this.setState({
 					importObj: importObj
 				})
-			});
+			})
+			.then(() => {
+				
+			})
+
+		airTower.core.findImportByID(this.getVideoID())
+			.then((coreImportObj) => {
+				this.setState({
+					coreImportObj: coreImportObj
+				})
+			})
+			.catch((error) => {
+				airTower.core.takeOwnership(this.getServiceName(), this.getVideoID())
+					.then((coreImportObj) => {
+						this.setState({
+							coreImportObj: coreImportObj
+						})
+					})
+			})
 	}
 
 	onTimelineUpdate (timecode) {
@@ -98,9 +117,10 @@ class Edit extends Component {
 
 	render () {
 
-		if (!this.state.importObj) {
+		if (!this.state.importObj || !this.state.coreImportObj) {
 			return (<b>loading</b>);
 		}
+
 		return (
 
 			<div class="fullpage">
@@ -140,7 +160,12 @@ class Edit extends Component {
 					<div class="video-selector">
 						<AppBar position="static">
 							<Toolbar>
-								<div style={{ flex: 1 }}>{ '{videoFileName}' }</div>
+								<div style={{ flex: 1 }}>
+									<TextField
+										fullWidth={ true }
+										defaultValue={ this.state.coreImportObj.title || 'Untitled' }
+										margin="normal" />
+								</div>
 								<IconButton color="inherit" aria-label="Menu">
 									S
 								</IconButton>

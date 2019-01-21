@@ -11,6 +11,7 @@ export default class IAirTower {
 			options = {};
 		}
 
+		options.mode = 'no-cors';
 		options.credentials = 'same-origin';
 
 		return fetch(root + url, options)
@@ -22,7 +23,7 @@ export default class IAirTower {
 	checkResponse (response) {
 
 		if (response.status >= 500) {
-			alert("Backend returned " + response.status);
+			console.error("Backend returned " + response.status);
 		}
 
 		return response;

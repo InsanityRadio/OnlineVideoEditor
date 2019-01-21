@@ -5,6 +5,8 @@ import { BrowserRouter } from 'react-router-dom';
 import './App.css';
 import logo from './logo.svg';
 
+import AirTower from './network/AirTower';
+
 import EditComponent from './edit/Edit';
 import HomeComponent from './home/Home';
 import FrameComponent from './frame/Frame';
@@ -50,7 +52,22 @@ const theme = createMuiTheme({
 });
 
 class App extends Component {
+	state = {
+		ready: false
+	}
+	componentWillMount () {
+		AirTower.getInstance().bootstrap().then((a) => {
+			this.setState({
+				ready: true
+			})
+		})
+	}
 	render () {
+
+		if (!this.state.ready) {
+			return null;
+		}
+
 		return (
 			<BrowserRouter>
 				<MuiThemeProvider theme={theme}>
