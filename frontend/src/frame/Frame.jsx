@@ -160,32 +160,44 @@ class Frame extends Component {
 
 		}
 
-		while (true) {
+		let i = 0;
 
-			context.font = "bold " + size + "px Bebas Neue";
-			size -= 5;
-
-			if (context.measureText(line).width <= config.w) {
-				// Single line!
-				context.fillText(line, config.x, config.y);
-				return;
-			}
-
-			if (size <= config.wrap.minFont) {
-				break;
-			}
-
-		}
+		let BREAK_CHARACTER = '^';
 
 		let words = line.split(' ');
+
+		if (line.indexOf(BREAK_CHARACTER) == -1) {
+			while (true) {
+
+				context.font = "bold " + size + "px Bebas Neue";
+				size -= 5;
+
+				if (context.measureText(line).width <= config.w) {
+					// Single line!
+					context.fillText(line, config.x, config.y);
+					return;
+				}
+
+				if (size <= config.wrap.minFont) {
+					break;
+				}
+
+			}
+
+			for (i = words.length; i > 0; i--) {
+				let phrase = words.slice(0, i).join(' ');
+				if (context.measureText(phrase).width < config.w) {
+					break;
+				}
+			}
+
+		} else {
+			i = 1;
+			words = line.split(BREAK_CHARACTER);
+		}
+		
 		size = config.wrap.minFont;
 
-		for (var i = words.length; i > 0; i--) {
-			let phrase = words.slice(0, i).join(' ');
-			if (context.measureText(phrase).width < config.w) {
-				break;
-			}
-		}
 
 		context.font = "bold " + size + "px Bebas Neue";
 		context.fillText(words.slice(0, i).join(' '), config.x, config.y - size * 0.7);
@@ -287,7 +299,8 @@ class Frame extends Component {
 						<div className={ this.state['layers.background'] ? "layer-1 video-layer" : "layer-1 video-layer video-layer-stretch"} >
 							<Video
 								ref={ (v) => this.setVideo(v) }
-								src="/video/test.mp4"
+								hls={ true }
+								src={ this.props.previewSRC}
 								style={ this.getStyleForLayer('video') } 
 								onStateChange={ (state) => this.setVideoState(state) }
 								segmentStart = { 0 }

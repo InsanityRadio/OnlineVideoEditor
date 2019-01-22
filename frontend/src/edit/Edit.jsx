@@ -260,6 +260,7 @@ class Edit extends Component {
 				return <FrameComponent
 					importObj={ this.state.importObj }
 					coreImportObj={ this.state.coreImportObj }
+					previewSRC={ this.getVideoSRC() }
 					initialState={ this.findVideoForType('frame').configuration }
 					saveAndClose={ this.closeSubView.bind(this, 'frame') } />
 
