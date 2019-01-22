@@ -8,8 +8,7 @@ module OVE
 			enable :sessions
 
 			configure do
-				enable :sessions
-				set :sessions,
+				use Rack::Session::Cookie,
 					:key => 'ove.session.ingest',
 					:httponly => true,
 					:expire_after => 31557600,

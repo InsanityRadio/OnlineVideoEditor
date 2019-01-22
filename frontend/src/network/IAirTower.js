@@ -13,6 +13,13 @@ export default class IAirTower {
 
 		options.credentials = 'same-origin';
 
+		if (!options.headers) {
+			options.headers = {}
+		}
+
+		// Setting this header prevents the JsonCsrf web application firewall rule being triggered
+		options.headers['X-Requested-With'] = 'XMLHttpRequest';
+
 		return fetch(root + url, options)
 			.then ((response) => this.checkResponse(response))
 			.then ((response) => response.json());
@@ -22,7 +29,7 @@ export default class IAirTower {
 	checkResponse (response) {
 
 		if (response.status >= 500) {
-			alert("Backend returned " + response.status);
+			console.error("Backend returned " + response.status);
 		}
 
 		return response;

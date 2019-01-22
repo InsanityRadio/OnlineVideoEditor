@@ -154,3 +154,21 @@
 .side-content .padded-button {
 	margin: 10px 0;
 }
+
+.selectionCard {
+	display: flex;
+	flex-direction: row;
+}
+
+.selectionCard > div:first-child + div {
+	flex: 1;
+	padding-left: 0;
+}
+
+.selectionCardContainer {
+	margin-bottom: 20px;
+}
+
+.small-text {
+	font-size: 10pt;
+}

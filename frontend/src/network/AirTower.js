@@ -1,6 +1,8 @@
 import 'whatwg-fetch';
 
 import IAirTower from './IAirTower';
+
+import CoreAirTower from './CoreAirTower';
 import IngestAirTower from './IngestAirTower';
 
 /**
@@ -37,9 +39,10 @@ export default class AirTower extends IAirTower {
 	 * Returns a promise that resolves once the airtowers have bootstrapped.
 	 */
 	bootstrap () {
-		return Promise.all(this.airtowers.map((a) => a.bootstrap()));
+		return Promise.all(this.airtowers.map((a) => a.bootstrap())).catch((e) => false);
 	}
 
 }
 
-AirTower.register('ingest', IngestAirTower)
+AirTower.register('ingest', IngestAirTower);
+AirTower.register('core', CoreAirTower);

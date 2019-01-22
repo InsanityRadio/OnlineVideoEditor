@@ -78,6 +78,12 @@ class Frame extends Component {
 	}
 
 	componentWillMount () {
+		try {
+			let initialStateData = JSON.parse(this.props.initialState);
+			delete initialStateData.raw;
+			this.setState(initialStateData);
+		} catch (e) {
+		}
 	}
 
 	setLayer (canvas, layer) {
@@ -136,8 +142,6 @@ class Frame extends Component {
 		config = this.evaluateConfig(config);
 		let context = this.canva['text'].getContext('2d');
 
-		console.log('NEW CONFIG', config)
-
 		context.fillStyle = 'white';
 		context.textAlign = config.textAlign;
 		context.textBaseline = config.textBaseline;
@@ -156,32 +160,44 @@ class Frame extends Component {
 
 		}
 
-		while (true) {
+		let i = 0;
 
-			context.font = "bold " + size + "px Bebas Neue";
-			size -= 5;
-
-			if (context.measureText(line).width <= config.w) {
-				// Single line!
-				context.fillText(line, config.x, config.y);
-				return;
-			}
-
-			if (size <= config.wrap.minFont) {
-				break;
-			}
-
-		}
+		let BREAK_CHARACTER = '^';
 
 		let words = line.split(' ');
+
+		if (line.indexOf(BREAK_CHARACTER) == -1) {
+			while (true) {
+
+				context.font = "bold " + size + "px Bebas Neue";
+				size -= 5;
+
+				if (context.measureText(line).width <= config.w) {
+					// Single line!
+					context.fillText(line, config.x, config.y);
+					return;
+				}
+
+				if (size <= config.wrap.minFont) {
+					break;
+				}
+
+			}
+
+			for (i = words.length; i > 0; i--) {
+				let phrase = words.slice(0, i).join(' ');
+				if (context.measureText(phrase).width < config.w) {
+					break;
+				}
+			}
+
+		} else {
+			i = 1;
+			words = line.split(BREAK_CHARACTER);
+		}
+		
 		size = config.wrap.minFont;
 
-		for (var i = words.length; i > 0; i--) {
-			let phrase = words.slice(0, i).join(' ');
-			if (context.measureText(phrase).width < config.w) {
-				break;
-			}
-		}
 
 		context.font = "bold " + size + "px Bebas Neue";
 		context.fillText(words.slice(0, i).join(' '), config.x, config.y - size * 0.7);
@@ -220,19 +236,34 @@ class Frame extends Component {
 	}
 
 	exportData () {
-
-		let background = this.mergeLayers(['background']);
+		let background = this.mergeLayers(['background'], '#000000');
 		let foreground = this.mergeLayers(['text', 'logo', 'foreground']);
 
-		// POST bg, fg to backend
+		let data = {
+			'line1': this.state.line1,
+			'line2': this.state.line2,
+			'layers.logo': this.state['layers.logo'],
+			'layers.background': this.state['layers.background'],
+			'layers.foreground': this.state['layers.foreground'],
+			raw: {
+				background: background,
+				foreground: foreground
+			}
+		}
 
+		return JSON.stringify(data);
 	}
 
-	mergeLayers (layers) {
+	mergeLayers (layers, backgroundColour) {
 
 		let canvas = document.createElement('canvas');
 		canvas.width = canvas.height = this.canva[layers[0]].width;
 		let context = canvas.getContext('2d');
+
+		if (backgroundColour != undefined) {
+			context.fillStyle = backgroundColour;
+			context.fillRect(0, 0, canvas.width, canvas.height);
+		}
 
 		for (var i = 0; i < layers.length; i++) {
 			context.drawImage(this.canva[layers[i]], 0, 0);
@@ -268,7 +299,8 @@ class Frame extends Component {
 						<div className={ this.state['layers.background'] ? "layer-1 video-layer" : "layer-1 video-layer video-layer-stretch"} >
 							<Video
 								ref={ (v) => this.setVideo(v) }
-								src="/video/test.mp4"
+								hls={ true }
+								src={ this.props.previewSRC}
 								style={ this.getStyleForLayer('video') } 
 								onStateChange={ (state) => this.setVideoState(state) }
 								segmentStart = { 0 }
@@ -292,10 +324,7 @@ class Frame extends Component {
 
 						<AppBar position="static">
 							<Toolbar>
-								<div style={{ flex: 1 }}>{ '{videoFileName}' }</div>
-								<IconButton color="inherit" aria-label="Menu">
-									S
-								</IconButton>
+								<div style={{ flex: 1 }}>{ this.props.coreImportObj.title }</div>
 							</Toolbar>
 						</AppBar>
 
@@ -353,8 +382,13 @@ class Frame extends Component {
 
 							</RadioGroup>
 
-							<Button variant="outlined" color="secondary">
-								Render
+							<Button
+									variant="contained"
+									color="secondary"
+									fullWidth={ true }
+									onClick={ this.props.saveAndClose.bind(this, this.exportData.bind(this)) }
+									className="padded-button">
+								Save &amp; Return
 							</Button>
 
 						</div>

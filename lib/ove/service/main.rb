@@ -6,12 +6,11 @@ module OVE
 		class Main < HTTPService
 
 			configure do
-				enable :sessions
-				set :sessions,
+				use Rack::Session::Cookie,
 					:key => 'ove.session.core',
 					:httponly => true,
 					:expire_after => 31557600,
-					:secret => SecureRandom.hex
+					:secret => $config['global']['secret_key']
 			end
 
 			def authorize!
@@ -114,21 +113,48 @@ module OVE
 				)
 			end
 
+			get '/import/:uuid/' do |uuid|
+				authorize!
+
+				import = Model::Import.find_by(uuid: uuid)
+
+				send_json(
+					success: 1,
+					import: import.to_h
+				)
+			end
+
 			post '/import/:uuid/:video_id/save' do |uuid, video_id|
 				authorize!
 
-				video = Model::Video.find_by(video_id)
+				video = Model::Video.find_by(id: video_id)
 
 				configuration = params['configuration']
 
 				halt 405 if video.queued or video.rendered
 
-				video.configuration = configuration
+				video.configuration = configuration if configuration != nil
 				video.save
 
 				send_json(
 					success: 1,
 					import: video.import.to_h
+				)
+			end
+
+			post '/import/:uuid/:video_id/delete' do |uuid, video_id|
+				authorize!
+
+				video = Model::Video.find_by(id: video_id)
+				import = video.import
+
+				halt 405 if video.queued or video.rendered
+
+				video.destroy
+
+				send_json(
+					success: 1,
+					import: import.to_h
 				)
 			end
 
