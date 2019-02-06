@@ -1,0 +1,61 @@
+#!/bin/bash
+set -e
+
+if [ "$#" -ne 4 ]; then
+	echo "Usage: $0 video.ts:start:length intro.ts:cue_point extro.ts output.ts"
+	exit 1
+fi
+
+VIDEO=$1
+# Split the video into an array, and add default arguments to the end. We use these to calculate video times
+VIDEO="$VIDEO:0:0"
+VIDEO=(${VIDEO//:/ })
+
+INTRO_VIDEO=$2
+INTRO_VIDEO=(${INTRO_VIDEO//:/ })
+
+EXTRO_VIDEO=$3
+DESTINATION=$4
+
+
+# Work out the offset when the video should play, based on the length of the intro video (not audio).
+# This allows us to "tail" the audio so it sounds more transparent to the viewer
+INTRO_CUE_S=${INTRO_VIDEO[1]}
+INTRO_CUE_MS=`echo $INTRO_CUE_S \* 1000 | bc -l`
+
+INTRO_VIDEO=${INTRO_VIDEO[0]}
+
+# Find the length of the video, both in full, and with the start/end trims considered
+if [[ "${VIDEO[2]}" == "0" ]]; then
+	VIDEO_LENGTH_S=`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${VIDEO[0]}"`
+else
+	VIDEO_LENGTH_S=${VIDEO[2]}
+fi
+
+VIDEO_RESOLUTION=`ffprobe -v error -show_entries stream=height,width -of 'csv=s=\::p=0' "${VIDEO[0]}" | head -n 1`
+
+# Add the intro cue point to this to work out when we should start the extro
+EXTRO_CUE_S=`echo $INTRO_CUE_S + $VIDEO_LENGTH_S | bc -l`
+EXTRO_CUE_MS=`echo $EXTRO_CUE_S \* 1000 | bc -l`
+
+
+echo "Intro cue is $INTRO_CUE_S"
+echo "Extro cue is $EXTRO_CUE_S"
+
+# Generate the audio track by:
+#  1. Adding silence to the end of INTRO_CUE to prevent it getting cut off
+#  2. Delaying VIDEO[_AUDIO] by INTRO_CUE
+#  3. Mixing delayed INTRO_AUDIO, then VIDEO[_AUDIO] 
+
+ffmpeg -y -i "$INTRO_VIDEO" -i "${VIDEO[0]}" -i "$EXTRO_VIDEO" -filter_complex \
+	"[0:v]scale=${VIDEO_RESOLUTION},trim=start=0:duration=${INTRO_CUE_S},setsar=1[0v];
+	 [1:v]trim=start=${VIDEO[1]}:duration=${VIDEO_LENGTH_S},setpts=PTS-STARTPTS,setsar=1[1v];
+	 [2:v]scale=${VIDEO_RESOLUTION},setsar=1[2v];
+	 [0v][1v][2v]concat=n=3:v=1[v];
+
+	 [1:a]atrim=start=${VIDEO[1]}:duration=${VIDEO_LENGTH_S},asetpts=PTS-STARTPTS,adelay=${INTRO_CUE_MS}|${INTRO_CUE_MS}[1a_delay];
+	 [2:a]adelay=${EXTRO_CUE_MS}|${EXTRO_CUE_MS}[2a_delay];
+	 [0:a][1a_delay][2a_delay]amix=3:duration=longest[a]" \
+	-map "[v]" -map "[a]" -c:v h264 -movflags faststart -b:v 6000k -c:a aac -b:a 256k "$DESTINATION"
+
+
