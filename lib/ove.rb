@@ -1,5 +1,8 @@
 $LOAD_PATH << './'
 
+require 'yaml'
+$config = YAML::load(File.read('./config.yml'))
+
 # Defines the main project namespace
 module OVE
 end

@@ -6,5 +6,6 @@ end
 
 require_relative './model/import'
 require_relative './model/share'
+require_relative './model/slate'
 require_relative './model/user'
 require_relative './model/video'

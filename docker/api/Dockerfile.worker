@@ -1,0 +1,20 @@
+FROM ruby:2.3-jessie
+MAINTAINER Jamie Woods <computing@insanityradio.com>
+
+RUN echo "deb http://www.deb-multimedia.org jessie main non-free" >> /etc/apt/sources.list && echo "deb-src http://www.deb-multimedia.org jessie main non-free " >> /etc/apt/sources.list
+
+RUN apt-get update && apt-get install -y  --force-yes \
+build-essential libmysqlclient-dev deb-multimedia-keyring && apt-get install -y --force-yes ffmpeg 
+
+
+RUN mkdir /app
+WORKDIR /app
+
+COPY Gemfile Gemfile.lock ./
+RUN env
+RUN gem install --http-proxy http://10.32.1.1:3128 bundler && bundle install --jobs 20 --retry 5
+
+COPY . ./
+
+CMD ["bash", "-c", "QUEUE=* rake resque:work"]
+

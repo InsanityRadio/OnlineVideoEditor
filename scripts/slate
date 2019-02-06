@@ -2,17 +2,17 @@
 set -e
 
 if [ "$#" -ne 4 ]; then
-	echo "Usage: $0 video.ts:start:length intro.ts:cue_point extro.ts output.ts"
+	echo "Usage: $0 video.ts,start,length intro.ts,cue_point extro.ts output.ts"
 	exit 1
 fi
 
 VIDEO=$1
 # Split the video into an array, and add default arguments to the end. We use these to calculate video times
-VIDEO="$VIDEO:0:0"
-VIDEO=(${VIDEO//:/ })
+VIDEO="$VIDEO,0,0"
+VIDEO=(${VIDEO//,/ })
 
 INTRO_VIDEO=$2
-INTRO_VIDEO=(${INTRO_VIDEO//:/ })
+INTRO_VIDEO=(${INTRO_VIDEO//,/ })
 
 EXTRO_VIDEO=$3
 DESTINATION=$4

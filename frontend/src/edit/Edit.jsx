@@ -38,35 +38,36 @@ class Edit extends Component {
 		video: {
 			playing: false
 		},
-		landscape: false,
+		slate: false,
 		frame: false,
 		videoTitle: null,
 		platforms: {},
-
 		subview: null,
+		renderState: []
 	}
 
 	platforms = {
 		youtube: {
-			landscape: true,
+			slate: true,
 			frame: false
 		},
 		facebook: {
-			landscape: true,
+			slate: true,
 			frame: true
 		},
 		twitter: {
-			landscape: true,
+			slate: true,
 			frame: true
 		},
 		instagram: {
-			landscape: false,
+			slate: false,
 			frame: true
 		}
 	}
 
 	componentWillMount () {
 		this.loadImport();
+		this.loadRenderState();
 
 		// Transform available platforms into a state object that holds whether or not they are enabled
 		let platforms = Object.assign({}, this.platforms);
@@ -132,30 +133,68 @@ class Edit extends Component {
 			.then((coreImportObj) => {
 				this.setState({
 					coreImportObj: coreImportObj
-				})
-				this.checkAndCreateVideos();
+				}, () => this.checkForVideos());
 			})
 			.catch((error) => {
-				airTower.core.takeOwnership(this.getServiceName(), this.getImportID())
+				console.log('error finding', error)
 					.then((coreImportObj) => {
 						this.setState({
 							coreImportObj: coreImportObj
-						})
-						this.checkAndCreateVideos();
+						}, () => this.checkForVideos());
 					})
 			})
 	}
 
-	checkAndCreateVideos () {
-		let required = ['default', 'slate', 'frame'];
+	loadRenderState () {
+		let airTower = AirTower.getInstance();
+
+		airTower.core.loadRenderState(this.getImportID())
+			.then((renderState) => {
+				this.setState({
+					renderState: renderState
+				})
+				if (renderState.length > 0) {
+					setTimeout(this.loadRenderState.bind(this), 5000);
+				}
+			});
+	}
+
+	// Based on what videos exist on the backend, check the relevant boxes to show that they exist. 
+	checkForVideos () {
 		let videos = this.state.coreImportObj.videos;
+
+		let enabledState = {};
+		for (var i = 0; i < videos.length; i++) {
+			enabledState[videos[i].type] = true;
+		}
+
+		this.setState(enabledState);
+	}
+
+	getEnabledVideoTypes () {
+		let types = ['default', 'slate', 'frame'];
+		return types.filter((a) => this.state[a] == true);
+	}
+
+	checkAndCreateVideos () {
+		let required = this.getEnabledVideoTypes(); 
+		let videos = this.state.coreImportObj.videos;
+
+		let airTower = AirTower.getInstance();
 		for (var i = 0; i < videos.length; i++) {
 			if (required.includes(videos[i].type)) {
 				required = required.filter((a) => a != videos[i].type)
+			} else {
+				// no longer required, delete this!
+				airTower.core.deleteVideoById(this.getImportID(), videos[i].id)
+					.then((coreImportObj) => {
+						this.setState({
+							coreImportObj: coreImportObj
+						})
+					})
 			}
 		}
 
-		let airTower = AirTower.getInstance();
 		for (var i = 0; i < required.length; i++) {
 			airTower.core.createVideoByType(this.getImportID(), required[i])
 				.then((coreImportObj) => {
@@ -191,7 +230,7 @@ class Edit extends Component {
 	updateLocalField (field, event) {
 		this.setState({
 			[field]:  event.target[event.target.hasOwnProperty('checked') ? 'checked' : 'value']
-		});
+		}, () => this.checkAndCreateVideos());
 	}
 
 	updatePlatform (platform, type, event) {
@@ -232,6 +271,14 @@ class Edit extends Component {
 			})
 	}
 
+	sendRender () {
+
+	}
+
+	downloadRawVideo () {
+
+	}
+
 	/**
 	 * For a child video, save its configuration
 	 */
@@ -245,6 +292,37 @@ class Edit extends Component {
 					coreImportObj: coreImportObj
 				})
 			})
+	}
+
+	getStyleFor (renderType) {
+		let styles = ['selectionCardContainer'], video = this.findVideoForType(renderType);
+
+		if (video != null && (video.queued || video.rendering)) {
+			styles.push('rendering');
+			styles.push('render-state-' + this.getRenderStateClass(video.id));
+		}
+
+		return styles.join(' ');
+	}
+
+	getRenderStateClass (videoID) {
+		let renderState = this.state.renderState.find((state) => state.video_id == videoID);
+		if (!renderState) {
+			return 'none';
+		}
+		return renderState.status;
+	}
+
+	getRenderProgress (renderType) {
+		let video = this.findVideoForType(renderType);
+
+		let renderState = this.state.renderState.find((state) => state.video_id == video.id);
+
+		if (!renderState) {
+			return 0;
+		}
+
+		return renderState.level;
 	}
 
 	render () {
@@ -268,8 +346,8 @@ class Edit extends Component {
 
 		return (
 
-			<div class="fullpage">
-				<div class="video-container">
+			<div className="fullpage">
+				<div className="video-container">
 					<div className="video-player fit">
 						<div className="video-player-video-element">
 							<Video
@@ -301,8 +379,8 @@ class Edit extends Component {
 
 				</div>
 
-				<div class="video-side">
-					<div class="video-selector">
+				<div className="video-side">
+					<div className="video-selector">
 						<AppBar position="static">
 							<Toolbar>
 								<div style={{ flex: 1 }}>
@@ -319,18 +397,25 @@ class Edit extends Component {
 							</Toolbar>
 						</AppBar>
 
-						<div class="side-content">
+						<div className="side-content">
 
 							<Typography variant="h5" component="h2">
 								Target Platforms
 							</Typography>
 
-							<Card className="selectionCardContainer">
-								<div class="selectionCard">
+							<Card className={ this.getStyleFor('slate') }>
+								<div className="selectionCard">
+									<div className="rendering-progress">
+										<div
+											className="rendering-progress-element"
+											style={{ width: this.getRenderProgress('slate') + '%' }}>
+										</div>
+										<p>Render Message</p>
+									</div>
 									<CardActions>
 										<Checkbox
-											checked={ this.state.landscape }
-											onChange={ this.updateLocalField.bind(this, 'landscape') }
+											checked={ this.state.slate }
+											onChange={ this.updateLocalField.bind(this, 'slate') }
 											color="primary" />
 									</CardActions>
 									<CardContent>
@@ -348,22 +433,22 @@ class Edit extends Component {
 											<FormControlLabel
 												control={
 													<Checkbox
-														checked={ this.state.platforms.youtube.landscape }
-														onChange={ this.updatePlatform.bind(this, 'youtube', 'landscape') } />
+														checked={ this.state.platforms.youtube.slate }
+														onChange={ this.updatePlatform.bind(this, 'youtube', 'slate') } />
 												}
 												label="YouTube" />
 											<FormControlLabel
 												control={
 													<Checkbox
-														checked={ this.state.platforms.facebook.landscape }
-														onChange={ this.updatePlatform.bind(this, 'facebook', 'landscape') } />
+														checked={ this.state.platforms.facebook.slate }
+														onChange={ this.updatePlatform.bind(this, 'facebook', 'slate') } />
 												}
 												label="Facebook" />
 											<FormControlLabel
 												control={
 													<Checkbox
-														checked={ this.state.platforms.twitter.landscape }
-														onChange={ this.updatePlatform.bind(this, 'twitter', 'landscape') } />
+														checked={ this.state.platforms.twitter.slate }
+														onChange={ this.updatePlatform.bind(this, 'twitter', 'slate') } />
 												}
 												label="Twitter" />
 										</FormGroup>
@@ -373,7 +458,7 @@ class Edit extends Component {
 							</Card>
 
 							<Card className="selectionCardContainer">
-								<div class="selectionCard">
+								<div className="selectionCard">
 									<CardActions>
 										<Checkbox
 											checked={ this.state.frame }
@@ -425,6 +510,7 @@ class Edit extends Component {
 									variant="contained"
 									color="secondary"
 									fullWidth={ true }
+									onClick={ this.sendRender.bind(this) }
 									className="padded-button">
 								Export &amp; Share
 							</Button>
@@ -435,6 +521,7 @@ class Edit extends Component {
 									variant="contained"
 									color="primary"
 									fullWidth={ true }
+									onClick={ this.downloadRawVideo.bind(this) }
 									className="padded-button">
 								Download Raw Video
 							</Button>

@@ -161,18 +161,59 @@ module OVE
 			post '/import/:uuid/:video_id/render' do |uuid, video_id|
 				authorize!
 
-				video = Model::Video.find_by(video_id)
+				video = Model::Video.find_by(id: video_id)
 
 				configuration = params['configuration']
 				video.queued = true
 
-				halt 500
+				if video.worker_id != nil
+					worker = Resque::Plugins::Status::Hash.get(video.worker_id)
 
-				# create backend render job here
+					halt 500 if ['queued', 'working', 'completed'].include? worker.status
+				end
+
+				video.worker_id = OVE::Worker::Render.create(video_id: video.id)
 
 				send_json(
 					success: 1,
 					import: video.import.to_h
+				)
+			end
+
+			get '/import/:uuid/render' do |uuid|
+				import = Model::Import.find_by(uuid: uuid)
+
+				videos = import.videos
+
+				send_json(
+					success: 1,
+					renders: videos.map { |v|
+						next if !v.worker_id
+						worker = Resque::Plugins::Status::Hash.get(v.worker_id)
+						{
+							video_id: v.id,
+							status: worker.status,
+							level: worker.pct_complete,
+							state: worker.message
+						}
+					}.compact
+				)
+			end
+
+			get '/import/:uuid/:video_id/render' do |uuid, video_id|
+				authorize!
+
+				video = Model::Video.find_by(id: video_id)
+
+				halt 404 if video.worker_id == nil
+
+				worker = Resque::Plugins::Status::Hash.get(video.worker_id)
+
+				send_json(
+					success: 1,
+					status: worker.status,
+					level: worker.pct_complete,
+					state: worker.message,
 				)
 			end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_17_195700) do
+ActiveRecord::Schema.define(version: 2019_01_28_202955) do
 
   create_table "imports", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.bigint "user_id"
@@ -32,6 +32,14 @@ ActiveRecord::Schema.define(version: 2019_01_17_195700) do
     t.index ["video_id"], name: "index_shares_on_video_id"
   end
 
+  create_table "slates", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.bigint "user_id"
+    t.string "path"
+    t.boolean "is_outro"
+    t.decimal "cue_point", precision: 10, scale: 2
+    t.index ["user_id"], name: "index_slates_on_user_id"
+  end
+
   create_table "users", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "external_ref"
     t.string "username"
@@ -44,9 +52,12 @@ ActiveRecord::Schema.define(version: 2019_01_17_195700) do
     t.bigint "import_id"
     t.bigint "user_id"
     t.string "video_type", default: "default"
-    t.text "configuration"
+    t.text "configuration", limit: 4294967295
     t.boolean "queued", default: false
     t.boolean "rendered", default: false
+    t.text "worker_id"
+    t.text "output_path"
+    t.text "output_expiry"
     t.index ["import_id"], name: "index_videos_on_import_id"
     t.index ["user_id"], name: "index_videos_on_user_id"
   end

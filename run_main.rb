@@ -2,9 +2,6 @@
 $LOAD_PATH << 'lib'
 
 require 'rack'
-require 'yaml'
-$config = YAML::load(File.read('./config.yml'))
-
 require 'ove'
 
 # This 'picks' the services that we want to expose/enable
