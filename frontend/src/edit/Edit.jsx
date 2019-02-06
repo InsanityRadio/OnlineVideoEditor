@@ -137,6 +137,7 @@ class Edit extends Component {
 			})
 			.catch((error) => {
 				console.log('error finding', error)
+				airTower.core.takeOwnership(this.getServiceName(), this.getImportID(), this.state.videoTitle)
 					.then((coreImportObj) => {
 						this.setState({
 							coreImportObj: coreImportObj

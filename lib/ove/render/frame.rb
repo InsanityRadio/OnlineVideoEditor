@@ -2,11 +2,7 @@ require 'base64'
 
 module OVE
 	module Render
-		class Slate < Base
-
-			def initialize
-				super
-			end
+		class Frame < Base
 
 			def render_video
 				@source_path
@@ -30,10 +26,14 @@ module OVE
 				@background_path = save_image @configuration['raw']['background']
 			end
 
+			def final_duration
+				length
+			end
+
 			def render_video_with_background
 				render_video_with_command([
 					'./scripts/frame',
-					@source_path + ',' + start_time + ',' + length,
+					@source_path + ",#{start_time},#{length}",
 					@background_path,
 					@output_path
 				])
@@ -42,7 +42,7 @@ module OVE
 			def render_video_without_background
 				render_video_with_command([
 					'./scripts/frame',
-					@source_path + ',' + start_time + ',' + length,
+					@source_path + ",#{start_time},#{length}",
 					@foreground_path,
 					@background_path,
 					@output_path
@@ -53,9 +53,11 @@ module OVE
 
 			# Save a base64-encoded PNG in a temporary file and return it as a path
 			def save_image image
-				image = Base64::decode64(image)
+				image = Base64::decode64(image.split(',')[1]).b
 				path = @manager.create '.png'
-				File.write(path, image)
+				File.open(path, 'wb') do |file|
+					file.write image
+				end
 				path
 			end
 

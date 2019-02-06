@@ -10,5 +10,9 @@ ingest:
         video:
             root: /video
 
+render:
+    scratch: /tmp
+    expiry: 2592000
+
 main:
     public_uri: http://10.32.2.31

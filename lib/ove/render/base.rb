@@ -22,21 +22,30 @@ module OVE
 				@abort.call
 			end
 
+			def clean!
+				@manager.clean
+			end
+
 			def render!
 				# 1. Download target video to temp directory. Can we use HLS as input and does it support itsoffset and tt? A: Yes. We can. 
 				# 2. Call render method on child with temp path and output path
 				# 3. Save to database.
 				@data = load_metadata @video
-				@output_path = @manager.create
+				@source_path = resolve_video(@video) + '/preview.m3u8'
+				@output_path = @manager.create('.mp4')
 				render_video 
+
+				if File.size?(@output_path) < 1000
+					raise 'Final video size implies failure, aborting'
+				end
+			end
+
+			def output_path
+				@output_path
 			end
 
 			def start_time
-				@data['start_time']
-			end
-
-			def end_time
-				@data['end_time']
+				@data['start_offset']
 			end
 
 			def length
@@ -45,33 +54,37 @@ module OVE
 
 			def download_source
 				@source_path = @manager.create
-				Downloader.new(resolve_video(@video), @source_path) do |percent|
+				Downloader.new(resolve_video(@video) + '/preview.m3u8', @source_path) do |percent|
 					# 0-10% is download progress
-					progress_update.call(percent / 10)
+					@progress_update.call(percent / 10)
 				end
 			end
 
 			private
+
+			# Determine the path to this video from the import engine
 			def resolve_video video
 				import = video.import
 				uuid = import.uuid
 				service = import.service
 
-				$config['ingest']['public_uri'] + '/' + service + '/' + uuid + '/preview.m3u8'
+				$config['ingest']['public_uri'] + '/' + service + '/import/' + uuid
 			end
 
+			# Find the appropriate metadata from the import engine
 			def load_metadata video
-				path = $config['ingest']['public_uri'] + '/' + service + '/' + uuid
-				data = JSON.parse(open(path).read)
+				data = JSON.parse(open(resolve_video(video)).read)
 				data['import']
 			end
 
-
 			# Given a command (an array), complete video render with status updates. 
 			def render_video_with_command command
-				puts 'I will run the following command to finish my render'
-				p command
-				raise 'todo'
+				ffmpeg = Engine::FFmpeg.new
+				ffmpeg.run! command
+
+				ffmpeg.progress do |prog|
+					@progress_update.call((100 * prog / final_duration).to_i, 'Rendering')
+				end
 			end
 
 		end

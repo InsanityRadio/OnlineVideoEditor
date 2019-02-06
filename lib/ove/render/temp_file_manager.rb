@@ -12,7 +12,7 @@ module OVE
 			end
 
 			def create extension = nil
-				file = Tempfile.new(extension != nil ? ['ove', extension] : extension).path
+				file = Tempfile.new(extension != nil ? ['ove', extension] : 'ove').path
 				add file
 				file
 			end

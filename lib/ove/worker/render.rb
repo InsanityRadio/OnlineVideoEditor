@@ -6,7 +6,7 @@ module OVE
 
 			def perform
 				video_id = options['video_id']
-				video = OVE::Model::Video.find_by(video_id)
+				video = OVE::Model::Video.find_by(id: video_id)
 
 				raise "Video has already been rendered" if video.rendered
 
@@ -16,11 +16,22 @@ module OVE
 					at(progress, 100, description)
 				end
 
-				renderer.abort do |reason|
-					raise reason
-				end
+				begin
+					renderer.abort do |reason|
+						raise reason
+					end
 
-				renderer.render!
+					renderer.render!
+
+					video.add_output renderer.output_path
+					puts "Rendered to #{video.output_path}"
+
+					video.queued = false
+					video.save
+				ensure
+					# Regardless, we should clean up the temporary directories
+					renderer.clean!
+				end
 			end
 		end
 	end
