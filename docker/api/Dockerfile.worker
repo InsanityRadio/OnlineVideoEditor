@@ -1,11 +1,8 @@
-FROM ruby:2.3-jessie
+FROM ruby:2.3-stretch
 MAINTAINER Jamie Woods <computing@insanityradio.com>
 
-RUN echo "deb http://www.deb-multimedia.org jessie main non-free" >> /etc/apt/sources.list && echo "deb-src http://www.deb-multimedia.org jessie main non-free " >> /etc/apt/sources.list
-
-RUN apt-get update && apt-get install -y  --force-yes \
-build-essential libmysqlclient-dev deb-multimedia-keyring && apt-get install -y --force-yes ffmpeg 
-
+RUN apt-get update && apt-get install -y \
+  build-essential libmariadbclient-dev ffmpeg
 
 RUN mkdir /app
 WORKDIR /app

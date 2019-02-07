@@ -4,8 +4,17 @@ module OVE
 
 			def initialize video
 				super video
-				@intro_slate = OVE::Model::Slate.find_by(options['intro_slate_id'])
-				@outro_slate = OVE::Model::Slate.find_by(options['outro_slate_id'])
+				@configuration = JSON.parse(@video.configuration)
+				@intro_slate = OVE::Model::Slate.find_by(@configuration['intro_slate_id'])
+				@outro_slate = OVE::Model::Slate.find_by(@configuration['outro_slate_id'])
+			end
+
+			def final_duration
+				if @intro_slate == nil && @outro_slate == nil
+					length + @intro_slate.cue_point + @outro_slate.cue_point
+				else
+					length
+				end
 			end
 
 			def render_video

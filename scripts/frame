@@ -41,12 +41,12 @@ if [ ! -z "$BACKGROUND" ]; then
 	 [base][2:v]overlay[v];
 	 [0:a]atrim=start=${VIDEO[1]}:duration=${VIDEO_LENGTH_S},asetpts=PTS-STARTPTS[0a]
 	 " \
-	-map "[v]" -map "[0a]" -c:v h264 -movflags faststart -b:v 6000k -c:a aac -b:a 256k "$DESTINATION"
+	-map "[v]" -map "[0a]" -c:v h264 -movflags faststart -b:v 6000k -c:a aac -b:a 256k -strict -2 "$DESTINATION"
 else
 	ffmpeg -y -i "${VIDEO[0]}" -i "$FOREGROUND" -filter_complex \
 	"[0:v]scale=-2:1024,trim=start=${VIDEO[1]}:duration=${VIDEO_LENGTH_S},crop=w=1024:h=1024:x=(in_w-in_h)/2,setsar=1,setpts=PTS-STARTPTS[0v];
 	 [0v][1:v]overlay[v];
 	 [0:a]atrim=start=${VIDEO[1]}:duration=${VIDEO_LENGTH_S},asetpts=PTS-STARTPTS[0a]
 	 " \
-	-map "[v]" -map "[0a]" -c:v h264 -movflags faststart -b:v 6000k -c:a aac -b:a 256k "$DESTINATION"
+	-map "[v]" -map "[0a]" -c:v h264 -movflags faststart -b:v 6000k -c:a aac -b:a 256k -strict -2 "$DESTINATION"
 fi

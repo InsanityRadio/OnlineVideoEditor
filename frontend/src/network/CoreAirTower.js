@@ -62,53 +62,17 @@ export default class CoreAirTower extends IAirTower {
 		return this.fetchWithForm('/import/' + uuid + '/' + videoID + '/save', {}, {
 			configuration: configuration
 		})
-			.then ((response) => {
-				if (response.success != 1) {
-					throw new Error('Failed to load a list of imports from the server!');
-				}
-
-				let importObj = response['import'];
-
-				if (!importObj) {
-					throw new Error('Could not find import on backend');
-				}
-
-				return new CoreImport(importObj);
-			})
+			.then((response) => this.createImportObj(response));
 	}
 
 	createVideoByType (uuid, type) {
 		return this.fetchWithForm('/import/' + uuid + '/create_video', { type: type }, {})
-			.then ((response) => {
-				if (response.success != 1) {
-					throw new Error('Failed to load a list of imports from the server!');
-				}
-
-				let importObj = response['import'];
-
-				if (!importObj) {
-					throw new Error('Could not find import on backend');
-				}
-
-				return new CoreImport(importObj);
-			})
+			.then((response) => this.createImportObj(response));
 	}
 
 	deleteVideoById (uuid, videoID) {
 		return this.fetchWithForm('/import/' + uuid + '/' + videoID + '/delete', {}, {})
-			.then ((response) => {
-				if (response.success != 1) {
-					throw new Error('Failed to load a list of imports from the server!');
-				}
-
-				let importObj = response['import'];
-
-				if (!importObj) {
-					throw new Error('Could not find import on backend');
-				}
-
-				return new CoreImport(importObj);
-			})
+			.then((response) => this.createImportObj(response));
 	}
 
 	loadRenderState (uuid) {
@@ -120,6 +84,26 @@ export default class CoreAirTower extends IAirTower {
 
 				return response.renders;
 			})
+	}
+
+	renderVideo (uuid, videoID) {
+		return this.fetchWithForm('/import/' + uuid + '/' + videoID + '/render', {}, {})
+			.then((response) => this.createImportObj(response));
+	}
+
+
+	createImportObj (response) {
+		if (response.success != 1) {
+			throw new Error('Failed to load a list of imports from the server!');
+		}
+
+		let importObj = response['import'];
+
+		if (!importObj) {
+			throw new Error('Could not find import on backend');
+		}
+
+		return new CoreImport(importObj);
 	}
 
 }

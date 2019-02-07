@@ -125,9 +125,6 @@ class Edit extends Component {
 					importObj: importObj
 				})
 			})
-			.then(() => {
-				
-			})
 
 		airTower.core.findImportByID(this.getImportID())
 			.then((coreImportObj) => {
@@ -153,7 +150,7 @@ class Edit extends Component {
 			.then((renderState) => {
 				this.setState({
 					renderState: renderState
-				})
+				});
 				if (renderState.length > 0) {
 					setTimeout(this.loadRenderState.bind(this), 5000);
 				}
@@ -192,7 +189,7 @@ class Edit extends Component {
 						this.setState({
 							coreImportObj: coreImportObj
 						})
-					})
+					});
 			}
 		}
 
@@ -202,7 +199,7 @@ class Edit extends Component {
 					this.setState({
 						coreImportObj: coreImportObj
 					})
-				})
+				});
 		}
 	}
 
@@ -221,7 +218,7 @@ class Edit extends Component {
 	setVideoState (state) {
 		this.setState({
 			video: state
-		})
+		});
 	}
 
 	getVideoSRC () {
@@ -258,7 +255,7 @@ class Edit extends Component {
 			this.saveConfiguration(type, data);
 		}
 
-		this.props.history.replace(this.props.location.pathname + '/..')
+		this.props.history.replace(this.props.location.pathname + '/..');
 	}
 
 	save () {
@@ -268,16 +265,34 @@ class Edit extends Component {
 				coreImportObj.set('title', this.state.videoTitle);
 				this.setState({
 					coreImportObj: this.state.coreImportObj
-				})
-			})
+				});
+			});
 	}
 
 	sendRender () {
+		let videosToSendForRender = this.getEnabledVideoTypes().map((type) => this.findVideoForType(type));
 
+		videosToSendForRender.forEach((video) => this.sendVideoForRender(video));
+	}
+
+	sendVideoForRender (video) {
+		let airTower = AirTower.getInstance();
+		airTower.core.renderVideo(this.getImportID(), video.id)
+			.then((coreImportObj) => {
+				coreImportObj.set('title', this.state.videoTitle);
+				this.setState({
+					coreImportObj: this.state.coreImportObj
+				})
+				this.loadRenderState();
+			});
 	}
 
 	downloadRawVideo () {
+		window.open(this.state.importObj.getPreviewPath(), '_blank');
+	}
 
+	downloadVideo (renderType) {
+		window.open(this.findVideoForType(renderType).getDownloadPath(), '_blank');
 	}
 
 	/**
@@ -298,7 +313,7 @@ class Edit extends Component {
 	getStyleFor (renderType) {
 		let styles = ['selectionCardContainer'], video = this.findVideoForType(renderType);
 
-		if (video != null && (video.queued || video.rendering)) {
+		if (video != null && (video.queued || video.rendered)) {
 			styles.push('rendering');
 			styles.push('render-state-' + this.getRenderStateClass(video.id));
 		}
@@ -317,6 +332,10 @@ class Edit extends Component {
 	getRenderProgress (renderType) {
 		let video = this.findVideoForType(renderType);
 
+		if (!video) {
+			return 0;
+		}
+
 		let renderState = this.state.renderState.find((state) => state.video_id == video.id);
 
 		if (!renderState) {
@@ -324,6 +343,31 @@ class Edit extends Component {
 		}
 
 		return renderState.level;
+	}
+
+	getRenderProgressMessage (renderType) {
+		let video = this.findVideoForType(renderType);
+
+		if (!video) {
+			return 'N/A';
+		}
+
+		let renderState = this.state.renderState.find((state) => state.video_id == video.id);
+
+		if (renderState && (renderState.status == 'completed') || video.rendered == true) {
+			return (
+				<Button onClick={ this.downloadVideo.bind(this, renderType) } variant="outlined">
+					Download
+				</Button>
+			);
+		}
+
+		if (!renderState) {
+			return 'N/A';
+		}
+
+
+		return renderState.state;
 	}
 
 	render () {
@@ -411,7 +455,7 @@ class Edit extends Component {
 											className="rendering-progress-element"
 											style={{ width: this.getRenderProgress('slate') + '%' }}>
 										</div>
-										<p>Render Message</p>
+										<p>{ this.getRenderProgressMessage('slate') }</p>
 									</div>
 									<CardActions>
 										<Checkbox
@@ -458,8 +502,15 @@ class Edit extends Component {
 								</div>
 							</Card>
 
-							<Card className="selectionCardContainer">
+							<Card className={ this.getStyleFor('frame') }>
 								<div className="selectionCard">
+									<div className="rendering-progress">
+										<div
+											className="rendering-progress-element"
+											style={{ width: this.getRenderProgress('frame') + '%' }}>
+										</div>
+										<p>{ this.getRenderProgressMessage('frame') }</p>
+									</div>
 									<CardActions>
 										<Checkbox
 											checked={ this.state.frame }

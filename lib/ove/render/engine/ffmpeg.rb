@@ -18,6 +18,7 @@ module OVE
 				# The yielded value is the render timestamp.
 				def progress
 					@stderr.each("\r") do |line|
+						p line
 						next unless line.include?("time=")
 						line = line.match /time=(\d{2}):(\d{2}):(\d{2})/
 						yield line[1].to_i * 3600 + line[2].to_i * 60 + line[3].to_i

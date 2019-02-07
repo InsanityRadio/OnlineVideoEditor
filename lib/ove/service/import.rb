@@ -147,7 +147,6 @@ module OVE
 				ensure
 					File.unlink(out_path) if out_path != nil
 				end
-
 			end
 
 		end

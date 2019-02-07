@@ -174,6 +174,8 @@ module OVE
 
 				video.worker_id = OVE::Worker::Render.create(video_id: video.id)
 
+				video.save
+
 				send_json(
 					success: 1,
 					import: video.import.to_h
@@ -215,6 +217,16 @@ module OVE
 					level: worker.pct_complete,
 					state: worker.message,
 				)
+			end
+
+			get '/import/:service/:uuid/:video_id/download.mp4' do |service, uuid, video_id|
+				authorize!
+
+				video = Model::Video.find_by(id: video_id)
+
+				halt 404 if video == nil or video.output_path.to_s == ''
+
+				send_file(video.output_path, :disposition => 'inline', :filename => File.basename(video.output_path))
 			end
 
 		end

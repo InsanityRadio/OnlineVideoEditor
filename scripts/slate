@@ -56,6 +56,6 @@ ffmpeg -y -i "$INTRO_VIDEO" -i "${VIDEO[0]}" -i "$EXTRO_VIDEO" -filter_complex \
 	 [1:a]atrim=start=${VIDEO[1]}:duration=${VIDEO_LENGTH_S},asetpts=PTS-STARTPTS,adelay=${INTRO_CUE_MS}|${INTRO_CUE_MS}[1a_delay];
 	 [2:a]adelay=${EXTRO_CUE_MS}|${EXTRO_CUE_MS}[2a_delay];
 	 [0:a][1a_delay][2a_delay]amix=3:duration=longest[a]" \
-	-map "[v]" -map "[a]" -c:v h264 -movflags faststart -b:v 6000k -c:a aac -b:a 256k "$DESTINATION"
+	-map "[v]" -map "[a]" -c:v h264 -movflags faststart -b:v 6000k -c:a aac -b:a 256k -strict -2 "$DESTINATION"
 
 
