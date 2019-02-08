@@ -19,6 +19,8 @@ import AirTower from '../network/AirTower';
 
 import FrameComponent from '../frame/Frame';
 
+import EditVideoType from './EditVideoType';
+
 import TimelineComponent from '../components/Timeline';
 import Video from '../components/Video';
 import VideoControls from '../components/VideoControls';
@@ -310,6 +312,14 @@ class Edit extends Component {
 			})
 	}
 
+	getRenderState (videoType) {
+		let video = this.findVideoForType(videoType);
+		if (!video) {
+			return null;
+		}
+		return this.state.renderState.find((state) => state.video_id == video.id);
+	}
+
 	getStyleFor (renderType) {
 		let styles = ['selectionCardContainer'], video = this.findVideoForType(renderType);
 
@@ -385,7 +395,15 @@ class Edit extends Component {
 					coreImportObj={ this.state.coreImportObj }
 					previewSRC={ this.getVideoSRC() }
 					initialState={ this.findVideoForType('frame').configuration }
-					saveAndClose={ this.closeSubView.bind(this, 'frame') } />
+					saveAndClose={ this.closeSubView.bind(this, 'frame') } />;
+
+			case 'slate':
+				return <FrameComponent
+					importObj={ this.state.importObj }
+					coreImportObj={ this.state.coreImportObj }
+					previewSRC={ this.getVideoSRC() }
+					initialState={ this.findVideoForType('frame').configuration }
+					saveAndClose={ this.closeSubView.bind(this, 'frame') } />;
 
 		}
 
@@ -448,115 +466,21 @@ class Edit extends Component {
 								Target Platforms
 							</Typography>
 
-							<Card className={ this.getStyleFor('slate') }>
-								<div className="selectionCard">
-									<div className="rendering-progress">
-										<div
-											className="rendering-progress-element"
-											style={{ width: this.getRenderProgress('slate') + '%' }}>
-										</div>
-										<p>{ this.getRenderProgressMessage('slate') }</p>
-									</div>
-									<CardActions>
-										<Checkbox
-											checked={ this.state.slate }
-											onChange={ this.updateLocalField.bind(this, 'slate') }
-											color="primary" />
-									</CardActions>
-									<CardContent>
-										<Typography variant="h5" component="h2">
-											Linear Video
-											&nbsp;&nbsp;
-											<Button>Edit</Button>
-										</Typography>
-
-										<p>
-											Select platforms to share on
-										</p>
-
-										<FormGroup>
-											<FormControlLabel
-												control={
-													<Checkbox
-														checked={ this.state.platforms.youtube.slate }
-														onChange={ this.updatePlatform.bind(this, 'youtube', 'slate') } />
-												}
-												label="YouTube" />
-											<FormControlLabel
-												control={
-													<Checkbox
-														checked={ this.state.platforms.facebook.slate }
-														onChange={ this.updatePlatform.bind(this, 'facebook', 'slate') } />
-												}
-												label="Facebook" />
-											<FormControlLabel
-												control={
-													<Checkbox
-														checked={ this.state.platforms.twitter.slate }
-														onChange={ this.updatePlatform.bind(this, 'twitter', 'slate') } />
-												}
-												label="Twitter" />
-										</FormGroup>
-
-									</CardContent>
-								</div>
-							</Card>
-
-							<Card className={ this.getStyleFor('frame') }>
-								<div className="selectionCard">
-									<div className="rendering-progress">
-										<div
-											className="rendering-progress-element"
-											style={{ width: this.getRenderProgress('frame') + '%' }}>
-										</div>
-										<p>{ this.getRenderProgressMessage('frame') }</p>
-									</div>
-									<CardActions>
-										<Checkbox
-											checked={ this.state.frame }
-											onChange={ this.updateLocalField.bind(this, 'frame') }
-											color="primary" />
-									</CardActions>
-									<CardContent>
-										<Typography variant="h5" component="h2">
-											Square Video
-											&nbsp;&nbsp;
-											<Button onClick={ this.openSubView.bind(this, 'frame') }>
-												Edit
-											</Button>
-										</Typography>
-
-										<p>
-											Select platforms to share on
-										</p>
-
-										<FormGroup>
-											<FormControlLabel
-												control={
-													<Checkbox
-														checked={ this.state.platforms.facebook.frame }
-														onChange={ this.updatePlatform.bind(this, 'facebook', 'frame') } />
-												}
-												label="Facebook" />
-											<FormControlLabel
-												control={
-													<Checkbox
-														checked={ this.state.platforms.twitter.frame }
-														onChange={ this.updatePlatform.bind(this, 'twitter', 'frame') } />
-												}
-												label="Twitter" />
-											<FormControlLabel
-												control={
-													<Checkbox
-														checked={ this.state.platforms.instagram.frame }
-														onChange={ this.updatePlatform.bind(this, 'instagram', 'frame') } />
-												}
-												label="Instagram" />
-										</FormGroup>
-
-									</CardContent>
-								</div>
-							</Card>
+							{ [['slate', 'Linear Video'], ['frame', 'Square Video']].map((videoType) => 
+								<EditVideoType 
+									videoType={ videoType[0] }
+									description={ videoType[1] }
+									platforms={ this.state.platforms }
+									enabledPlatforms={ this.platforms }
+									enabled={ this.state[videoType[0]] }
+									updatePlatform={ this.updatePlatform.bind(this) }
+									openSubView={ this.openSubView.bind(this) }
+									updateState={ this.updateLocalField.bind(this, videoType[0]) }
+									downloadVideo={ this.downloadVideo.bind(this, videoType[0]) }
+									renderState={ this.getRenderState(videoType[0]) }
+									video={ this.findVideoForType(videoType[0]) } />
+								)
+							}
 
 							<Button
 									variant="contained"
