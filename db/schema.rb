@@ -10,7 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_28_202955) do
+ActiveRecord::Schema.define(version: 2019_02_08_021735) do
+
+  create_table "frames", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.bigint "user_id"
+    t.string "name"
+    t.boolean "layer_type", default: true
+    t.text "configuration", limit: 4294967295
+    t.index ["user_id"], name: "index_frames_on_user_id"
+  end
 
   create_table "imports", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.bigint "user_id"

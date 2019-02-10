@@ -213,3 +213,19 @@
 	padding-top: 10px;
 	line-height: 1.5em;
 }
+
+.video-thumbnail-container {
+	display: flex;
+	flex-wrap: 1;
+}
+
+.video-thumbnail-video {
+	color: #FFF;
+	display: flex;
+	flex-basis: 150px;
+	margin: 10px;
+}
+
+.video-thumbnail-video img {
+	width: 100%;
+}

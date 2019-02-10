@@ -18,6 +18,7 @@ import Typography from '@material-ui/core/Typography';
 import AirTower from '../network/AirTower';
 
 import FrameComponent from '../frame/Frame';
+import SlateComponent from '../slate/Slate';
 
 import EditVideoType from './EditVideoType';
 
@@ -398,14 +399,16 @@ class Edit extends Component {
 					saveAndClose={ this.closeSubView.bind(this, 'frame') } />;
 
 			case 'slate':
-				return <FrameComponent
+				return <SlateComponent
 					importObj={ this.state.importObj }
 					coreImportObj={ this.state.coreImportObj }
 					previewSRC={ this.getVideoSRC() }
-					initialState={ this.findVideoForType('frame').configuration }
-					saveAndClose={ this.closeSubView.bind(this, 'frame') } />;
+					initialState={ this.findVideoForType('slate').configuration }
+					saveAndClose={ this.closeSubView.bind(this, 'slate') } />;
 
 		}
+
+		let trusted = true;
 
 		return (
 
@@ -474,7 +477,7 @@ class Edit extends Component {
 									enabledPlatforms={ this.platforms }
 									enabled={ this.state[videoType[0]] }
 									updatePlatform={ this.updatePlatform.bind(this) }
-									openSubView={ this.openSubView.bind(this) }
+									openSubView={ this.openSubView.bind(this, videoType[0]) }
 									updateState={ this.updateLocalField.bind(this, videoType[0]) }
 									downloadVideo={ this.downloadVideo.bind(this, videoType[0]) }
 									renderState={ this.getRenderState(videoType[0]) }
@@ -492,6 +495,8 @@ class Edit extends Component {
 							</Button>
 
 							<p className="small-text">Rendering may take a few minutes and is dependent on available server resources</p>
+
+							<p className="small-text">{ trusted ? "Video will be immediately shared" : "Video will be sent for approval before it is shared" }</p>
 
 							<Button
 									variant="contained"
