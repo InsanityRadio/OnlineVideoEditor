@@ -5,8 +5,8 @@ module OVE
 			def initialize video
 				super video
 				@configuration = JSON.parse(@video.configuration)
-				@intro_slate = OVE::Model::Slate.find_by(@configuration['intro_slate_id'])
-				@outro_slate = OVE::Model::Slate.find_by(@configuration['outro_slate_id'])
+				@intro_slate = OVE::Model::Slate.find_by(id: @configuration['intro_slate_id'])
+				@outro_slate = OVE::Model::Slate.find_by(id: @configuration['outro_slate_id'])
 			end
 
 			def final_duration

@@ -37,8 +37,8 @@ class Slate extends Component {
 	state = {
 		'intro_slate_id': null,
 		'outro_slate_id': null,
-		'intro_slate_name': 'Default',
-		'outro_slate_name': 'Default',
+		'intro_slate_name': 'None',
+		'outro_slate_name': 'None',
 
 		dialog: null,
 
@@ -75,7 +75,9 @@ class Slate extends Component {
 	exportData () {
 		let data = {
 			'intro_slate_id': this.state.intro_slate_id,
-			'outro_slate_id': this.state.outro_slate_id
+			'outro_slate_id': this.state.outro_slate_id,
+			'intro_slate_name': this.state.intro_slate_name,
+			'outro_slate_name': this.state.outro_slate_name
 		}
 
 		return JSON.stringify(data);
@@ -96,15 +98,34 @@ class Slate extends Component {
 	}
 
 	preview (type) {
-		console.log('argh', this.state.videoSRC)
+		let id = this.state[type + '_slate_id'];
+
 		this.setState({
-			videoSRC: type == 'intro' ? '/slates/default/intro.mp4' : '/slates/default/outro.mp4'
+			videoSRC: '/api/slates/' + id + '/download.mp4'
 		}, () => this.video.play())
+	}
+
+	selectSlate (type) {
+		this.setState({
+			dialog: 'video_selector',
+			dialogArg: type
+		})
+	}
+
+	closeSlateView (saveData) {
+		if (saveData != undefined) {
+			this.setState({
+				[this.state.dialogArg + '_slate_id']: saveData.id,
+				[this.state.dialogArg + '_slate_name']: saveData.name,
+			})
+		}
+		this.setState({
+			dialog: null
+		})
 	}
 
 	render () {
 		return (
-
 			<div className="fullpage">
 
 				<div className="video-container">
@@ -143,7 +164,7 @@ class Slate extends Component {
 							<div style={{ display: 'flex' }}>
 								<Select
 									open={ false }
-									onOpen={ () => '' }
+									onOpen={ this.selectSlate.bind(this, 'intro') }
 									fullWidth={ true }
 									value={ 0 }>
 									<MenuItem value={ 0 }>{ this.state.intro_slate_name }</MenuItem>
@@ -156,7 +177,7 @@ class Slate extends Component {
 							<div style={{ display: 'flex' }}>
 								<Select
 									open={ false }
-									onOpen={ () => '' }
+									onOpen={ this.selectSlate.bind(this, 'outro') }
 									fullWidth={ true }
 									value={ 0 }>
 									<MenuItem value={ 0 }>{ this.state.outro_slate_name }</MenuItem>
@@ -174,7 +195,11 @@ class Slate extends Component {
 								Save &amp; Return
 							</Button>
 
-							{ this.state.dialog == 'video_selector' && <VideoSelectorDialog /> }
+							{ this.state.dialog == 'video_selector' && (
+								<VideoSelectorDialog
+									type={ this.state.dialogArg }
+									onClose={ this.closeSlateView.bind(this) } />
+							)}
 
 						</div>
 

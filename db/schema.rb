@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_02_08_021735) do
+ActiveRecord::Schema.define(version: 2019_02_10_214506) do
 
   create_table "frames", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.bigint "user_id"
@@ -45,6 +45,8 @@ ActiveRecord::Schema.define(version: 2019_02_08_021735) do
     t.string "path"
     t.boolean "is_outro"
     t.decimal "cue_point", precision: 10, scale: 2
+    t.string "name"
+    t.string "thumbnail_path"
     t.index ["user_id"], name: "index_slates_on_user_id"
   end
 

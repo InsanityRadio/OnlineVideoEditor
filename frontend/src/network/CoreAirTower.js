@@ -1,6 +1,7 @@
 import IAirTower from './IAirTower';
 
 import CoreImport from './models/CoreImport';
+import Slate from './models/Slate';
 
 export default class CoreAirTower extends IAirTower {
 
@@ -47,7 +48,7 @@ export default class CoreAirTower extends IAirTower {
 				}
 
 				return new CoreImport(importObj);
-			})
+			});
 	}
 
 	takeOwnership (serviceName, importID, title) {
@@ -55,7 +56,7 @@ export default class CoreAirTower extends IAirTower {
 			service: serviceName,
 			title: title,
 			uuid: importID
-		}).catch((e) => null)
+		}).catch((e) => null);
 	}
 
 	updateVideo (uuid, videoID, configuration) {
@@ -83,7 +84,7 @@ export default class CoreAirTower extends IAirTower {
 				}
 
 				return response.renders;
-			})
+			});
 	}
 
 	renderVideo (uuid, videoID) {
@@ -104,6 +105,40 @@ export default class CoreAirTower extends IAirTower {
 		}
 
 		return new CoreImport(importObj);
+	}
+
+	createSlateObj (response) {
+		if (response.success != 1) {
+			throw new Error('Failed to load slate');
+		}
+
+		let slateObj = response['slate'];
+		if (!slateObj) {
+			throw new Error('Could not load slate from backend');
+		}
+
+		return new Slate(slateObj);
+	}
+
+	loadSlates () {
+		return this.fetch('/slates/')
+			.then((response) => {
+				if (!response.success) {
+					throw new Error('Failed to load list of slates from server');
+				}
+
+				let slates = response.slates.map((slateObj) => new Slate(slateObj));
+				return slates;
+			});
+	}
+
+	uploadSlate (name, videoFile, cuePoint) {
+		return this.fetchWithFile('/slates/new', { name: name, cue_point: cuePoint }, videoFile)
+			.then((response) => this.createSlateObj(response));
+	}
+
+	deleteSlate (id) {
+		return this.fetchWithForm('/slates/delete', { id: id }, {});
 	}
 
 }

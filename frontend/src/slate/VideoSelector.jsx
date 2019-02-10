@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 
+import AirTower from '../network/AirTower';
+
 import VideoThumbnail from '../components/VideoThumbnail.jsx';
 import VideoThumbnailContainer from '../components/VideoThumbnailContainer.jsx';
 
@@ -18,11 +20,26 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 class VideoSelector extends Component {
 
 	state = {
-		dialog: ''
+		dialog: '',
+		slates: []
+	}
+
+	componentWillMount () {
+		this.loadSlates();
+	}
+
+	loadSlates () {
+		let airTower = AirTower.getInstance().core;
+
+		airTower.loadSlates().then((slates) => this.setState({ slates }))
 	}
 
 	handleClose () {
+		this.props.onClose(undefined);
+	}
 
+	handleSelect (slate) {
+		this.props.onClose(slate)
 	}
 
 	openNew () {
@@ -31,20 +48,28 @@ class VideoSelector extends Component {
 		})
 	}
 
+	closeSlateView (saveData) {
+		this.props.onClose(saveData);
+	}
+
 	render () {
 		return (
 			<Dialog open={ true } maxWidth={ 'xl' } scroll="paper">
 				<DialogTitle>Select Video</DialogTitle>
 
 				{ this.state.dialog == 'new' && (
-					<VideoSelectorNew />
+					<VideoSelectorNew
+						onClose={ this.closeSlateView.bind(this) } />
 				)}
 
 				<DialogContent>
 					<VideoThumbnailContainer>
-						<VideoThumbnail thumbnail={ '/video/test.jpg'} title="Video Test" />
-						<VideoThumbnail thumbnail={ '/video/test.jpg'} title="Video Test" />
-						<VideoThumbnail thumbnail={ '/video/test.jpg'} title="Video Test" />
+						{ this.state.slates.map((slate) => (
+							<VideoThumbnail
+								thumbnail={ slate.getThumbnailPath() }
+								title={ slate.name }
+								onClick={ this.handleSelect.bind(this, slate) } />
+						))}
 
 						<div className="video-thumbnail-video">
 							<Button variant="outlined" onClick={ this.openNew.bind(this) }>
@@ -55,11 +80,8 @@ class VideoSelector extends Component {
 				</DialogContent>
 
 				<DialogActions>
-					<Button onClick={this.handleClose} color="secondary">
+					<Button onClick={ this.handleClose.bind(this) } color="secondary">
 						Cancel
-					</Button>
-					<Button onClick={this.handleClose} color="secondary" autoFocus>
-						Select
 					</Button>
 				</DialogActions>
 			</Dialog>
