@@ -18,4 +18,12 @@ export default class CoreVideo extends Model {
 		this.attr_reader('rendered');
 	}
 
+	getDownloadPath () {
+		return this.getBasePath() + '/download.mp4';
+	}
+
+	getBasePath () {
+		return '/api/import/todo/video/' + this.id;
+	}
+
 }

@@ -27,6 +27,7 @@ import {
 	faStepBackward,
 	faStepForward,
 	faSave,
+	faPlus,
 	faFileVideo,
 	faStopwatch
 } from '@fortawesome/free-solid-svg-icons';
@@ -39,6 +40,7 @@ library.add(
 	faStepBackward,
 	faStepForward,
 	faSave,
+	faPlus,
 	faFileVideo,
 	faStopwatch
 );

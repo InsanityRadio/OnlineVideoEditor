@@ -26,6 +26,10 @@ export default class Import extends Model {
 		return this.getBasePath() + '/preview.m3u8';
 	}
 
+	getDownloadPath () {
+		return this.getBasePath() + '/download.mp4';
+	}
+
 	getBasePath () {
 		return '/api/ingest/' + this.service_name + '/import/' + this.uuid;
 	}

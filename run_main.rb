@@ -2,14 +2,12 @@
 $LOAD_PATH << 'lib'
 
 require 'rack'
-require 'yaml'
-$config = YAML::load(File.read('./config.yml'))
-
 require 'ove'
 
 # This 'picks' the services that we want to expose/enable
 class Application < Sinatra::Application
 	use OVE::Service::Main
+	use OVE::Service::Slate
 end
 
 RunMain = Rack::Builder.new do

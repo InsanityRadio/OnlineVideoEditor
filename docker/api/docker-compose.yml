@@ -28,8 +28,29 @@ services:
     volumes:
       - video:/video
 
+  worker:
+    build:
+      context: ../..
+      dockerfile: ./docker/api/Dockerfile.worker
+    depends_on:
+      - redis
+      - mariadb
+    environment:
+      - http_proxy
+      - SERVICE=video
+      - REDIS=redis://redis:6379
+      - RACK_DB_NAME=ove
+      - RACK_DB_USER=ove
+      - RACK_DB_PASS=ove
+      - RACK_DB_HOST=mariadb
+      - RACK_ENV=production
+    volumes:
+      - video:/video
+
   redis:
     image: redis
+    ports:
+      - '6379:6379'
 
   nginx:
     image: nginx

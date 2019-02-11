@@ -172,3 +172,60 @@
 .small-text {
 	font-size: 10pt;
 }
+
+.selectionCardContainer .rendering-progress {
+	display: none;
+}
+
+.selectionCardContainer.rendering {
+	position: relative;
+}
+
+.selectionCardContainer.rendering .rendering-progress {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 99;
+	padding: 0 5em;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.selectionCardContainer.rendering .rendering-progress-element {
+	height: 1em;
+	background: #CCC;
+}
+
+.selectionCardContainer.render-state-failed .rendering-progress-element {
+	background: #C23;
+}
+
+.selectionCardContainer.rendering .rendering-progress p {
+	display: block;
+	width: 100%;
+	text-align: center;
+	padding-top: 10px;
+	line-height: 1.5em;
+}
+
+.video-thumbnail-container {
+	display: flex;
+	flex-wrap: 1;
+}
+
+.video-thumbnail-video {
+	color: #FFF;
+	display: flex;
+	flex-basis: 150px;
+	margin: 10px;
+}
+
+.video-thumbnail-video img {
+	width: 100%;
+}

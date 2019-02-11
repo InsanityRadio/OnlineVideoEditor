@@ -18,6 +18,17 @@ module OVE
 					shares: shares.map(&:to_h)
 				}
 			end
+
+			def add_output temporary_path
+				new_path = $config['render']['scratch'] + '/render_' + id.to_s + '.mp4'
+
+				FileUtils.copy(temporary_path, new_path)
+				
+				write_attribute :output_path, new_path
+				write_attribute :output_expiry, Time.now.to_i + $config['render']['expiry']
+				write_attribute :rendered, true
+				
+			end
 		end
 	end
 end

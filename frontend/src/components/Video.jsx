@@ -21,7 +21,7 @@ class Video extends Component {
 	shouldComponentUpdate (nextProps, nextState) {
 
 		// If the SRC updates anywhere, we need to update.
-		if (this.state.src != nextState.src ) {
+		if (this.state.src != nextState.src || this.props.src != nextProps.src) {
 			return true;
 		}
 
@@ -31,7 +31,6 @@ class Video extends Component {
 	componentWillMount () {
 
 		this.setSRC();
-
 
 		if (this.props.hls) {
 			// We can't use web workers with WebPack/create-react-app.
