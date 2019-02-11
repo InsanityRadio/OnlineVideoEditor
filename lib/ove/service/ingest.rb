@@ -47,7 +47,6 @@ module OVE
 				# 4. Send a m3u8 file with that stuff
 
 				my_sources = OVE::Ingest::SourceProvider.instance.sources
-
 				source = my_sources.find { |s| s.service == service }
 
 				halt 404 unless service
@@ -55,6 +54,46 @@ module OVE
 				content_type 'application/x-mpegURL'
 
 				source.generate_hls start_time * 1000.0, end_time * 1000.0
+			end
+
+			get '/:service/download.mp4' do |service, id|
+				start_time = params['start_time'].to_i
+				end_time = params['end_time'].to_i
+
+				my_sources = OVE::Ingest::SourceProvider.instance.sources
+				source = my_sources.find { |s| s.service == service }
+
+				halt 404 unless service
+
+				out_path = nil
+
+				begin
+
+					out_path, stderr, wait_thr = import.generate_mp4 start_time * 1000.0, end_time * 1000.0
+
+					halt 500 unless wait_thr.value.success?
+
+					# Write headers to make file download easier.
+					content_type 'video/mp4'
+					response.header['Content-Length'] = File.size(out_path)
+
+					file = File.open(out_path, 'rb')
+
+					# We can't use send_file here, as it will be garbage collected before the call ends
+					stream do | out |
+						until file.closed? or out.closed?
+							data = file.read(4096)
+							break if data == nil
+
+							out << data
+						end
+						file.close rescue nil
+						out.close rescue nil
+					end
+
+				ensure
+					File.unlink(out_path) if out_path != nil
+				end
 			end
 		end
 	end

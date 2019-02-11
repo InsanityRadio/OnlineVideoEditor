@@ -128,11 +128,12 @@ module OVE
 					halt 500 unless wait_thr.value.success?
 
 					# Write headers to make file download easier.
-					content_type 'application/x-mpegURL'
+					content_type 'video/mp4'
 					response.header['Content-Length'] = File.size(out_path)
 
 					file = File.open(out_path, 'rb')
 
+					# We can't use send_file here, as it will be garbage collected before the call ends
 					stream do | out |
 						until file.closed? or out.closed?
 							data = file.read(4096)

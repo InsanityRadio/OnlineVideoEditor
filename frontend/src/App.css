@@ -29,6 +29,22 @@
 	height: 100%;
 }
 
+.imports .main-navigation {
+	background: #333;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	overflow-y: scroll;
+}
+
+.imports .main-navigation .video-thumbnail-video img {
+	width: 150px;
+	height: 150px;
+}
+
 .video-player {
 	width: 100%;
 }
@@ -229,4 +245,23 @@
 
 .video-thumbnail-video img {
 	width: 100%;
+}
+
+.row {
+	display: flex;
+}
+
+.row > * {
+	margin-left: 10px !important;
+	margin-right: 10px !important;
+	flex: 1;
+}
+
+.row > *:first-child {
+	margin-left: 0 !important;
+}
+
+
+.row > *:last-child {
+	margin-right: 0 !important;
 }

@@ -91,6 +91,11 @@ module OVE
 				import.user_id = user.id
 				import.title = params['title']
 				import.save
+
+				send_json(
+					success: 1,
+					import: import.to_h
+				)
 			end
 
 			# Create a video [draft] based on an import
