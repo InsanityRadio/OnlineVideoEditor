@@ -320,67 +320,7 @@ class Edit extends Component {
 		}
 		return this.state.renderState.find((state) => state.video_id == video.id);
 	}
-
-	getStyleFor (renderType) {
-		let styles = ['selectionCardContainer'], video = this.findVideoForType(renderType);
-
-		if (video != null && (video.queued || video.rendered)) {
-			styles.push('rendering');
-			styles.push('render-state-' + this.getRenderStateClass(video.id));
-		}
-
-		return styles.join(' ');
-	}
-
-	getRenderStateClass (videoID) {
-		let renderState = this.state.renderState.find((state) => state.video_id == videoID);
-		if (!renderState) {
-			return 'none';
-		}
-		return renderState.status;
-	}
-
-	getRenderProgress (renderType) {
-		let video = this.findVideoForType(renderType);
-
-		if (!video) {
-			return 0;
-		}
-
-		let renderState = this.state.renderState.find((state) => state.video_id == video.id);
-
-		if (!renderState) {
-			return 0;
-		}
-
-		return renderState.level;
-	}
-
-	getRenderProgressMessage (renderType) {
-		let video = this.findVideoForType(renderType);
-
-		if (!video) {
-			return 'N/A';
-		}
-
-		let renderState = this.state.renderState.find((state) => state.video_id == video.id);
-
-		if (renderState && (renderState.status == 'completed') || video.rendered == true) {
-			return (
-				<Button onClick={ this.downloadVideo.bind(this, renderType) } variant="outlined">
-					Download
-				</Button>
-			);
-		}
-
-		if (!renderState) {
-			return 'N/A';
-		}
-
-
-		return renderState.state;
-	}
-
+	
 	render () {
 
 		if (!this.state.importObj || !this.state.coreImportObj) {

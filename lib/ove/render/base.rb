@@ -35,6 +35,10 @@ module OVE
 				@output_path = @manager.create('.mp4')
 				render_video 
 
+				if !File.exists?(@output_path) 
+					raise 'Render command exited and did not create video'
+				end
+
 				if File.size?(@output_path) < 1000
 					raise 'Final video size implies failure, aborting'
 				end

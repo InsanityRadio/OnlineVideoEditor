@@ -29,13 +29,13 @@ module OVE
 			end
 
 			def render_video_with_slate
-				command = [
+				render_video_with_command([
 					'./scripts/slate',
 					@source_path + ",#{start_time},#{length}",
-					@intro_slate.path + ',' + @intro_slate.cue_point,
+					@intro_slate.path + ',' + @intro_slate.cue_point.to_s,
 					@outro_slate.path,
 					@output_path
-				]
+				])
 			end
 		end
 	end

@@ -54,7 +54,7 @@ class EditVideoType extends Component {
 		return renderState.status;
 	}
 
-	getRenderProgress () {
+	getRenderProgressPC () {
 		let renderState = this.props.renderState;
 
 		if (!renderState) {
@@ -85,7 +85,7 @@ class EditVideoType extends Component {
 			<div className="rendering-progress">
 				<div
 					className="rendering-progress-element"
-					style={{ width: this.getRenderProgress() + '%' }}>
+					style={{ width: this.getRenderProgressPC() + '%' }}>
 				</div>
 				<p>{ renderState ? renderState.state : 'N/A' }</p>
 			</div>

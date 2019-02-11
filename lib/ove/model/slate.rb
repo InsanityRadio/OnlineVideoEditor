@@ -7,6 +7,7 @@ module OVE
 				{
 					created_by: user.id,
 					id: id,
+					type: is_outro ? 'outro' : 'intro',
 					name: name
 				}
 			end
