@@ -52,6 +52,7 @@
 	-moz-box-sizing: border-box;
 	background: #222;
 	color: #FFF;
+	overflow-y: scroll;
 }
 
 .side-content {
