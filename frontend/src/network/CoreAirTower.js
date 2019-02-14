@@ -56,7 +56,8 @@ export default class CoreAirTower extends IAirTower {
 			service: serviceName,
 			title: title,
 			uuid: importID
-		}).catch((e) => null);
+		})
+			.then((response) => this.createImportObj(response));
 	}
 
 	updateVideo (uuid, videoID, configuration) {

@@ -229,3 +229,27 @@
 .video-thumbnail-video img {
 	width: 100%;
 }
+
+.form-container {
+	margin-top: 10px;
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.form-container .form-column {
+	flex-basis: 250px;
+	margin: 10px;
+}
+
+.form-container .form-column:first-child {
+	flex: 1;
+}
+
+.form-column > * {
+	margin-top: 10px !important;
+}
+
+.form-column .form-helper {
+	float: right;
+	margin-top: -28px;
+}

@@ -3,6 +3,8 @@ module OVE
 		class Share < ActiveRecord::Base
 			belongs_to :user
 			belongs_to :video
+			belongs_to :platform
+
 			delegate :import, to: :video, allow_nil: false
 
 			def to_h

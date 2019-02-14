@@ -91,6 +91,11 @@ module OVE
 				import.user_id = user.id
 				import.title = params['title']
 				import.save
+
+				send_json(
+					success: 1,
+					import: import.to_h
+				)
 			end
 
 			# Create a video [draft] based on an import
@@ -227,6 +232,11 @@ module OVE
 				halt 404 if video == nil or video.output_path.to_s == ''
 
 				send_file(video.output_path, :disposition => 'inline', :filename => File.basename(video.output_path))
+			end
+
+
+			post '/import/:uuid/:video_id/share/new' do |uuid, video_id|
+
 			end
 
 		end

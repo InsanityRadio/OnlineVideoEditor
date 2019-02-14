@@ -10,6 +10,11 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Typography from '@material-ui/core/Typography';
 
+import FacebookConfig from './config/Facebook';
+import YouTubeConfig from './config/YouTube';
+import TwitterConfig from './config/Twitter';
+import InstagramConfig from './config/Instagram';
+
 let platformNames = {
 	facebook: 'Facebook',
 	twitter: 'Twitter',
@@ -19,6 +24,14 @@ let platformNames = {
 
 
 class EditVideoType extends Component {
+
+	state = {
+		platformConfig: {},
+
+		// Contains a mapping of backend share IDs for each platform, allowing configurability. 
+		share: {
+		}
+	}
 
 	componentWillMount () {
 
@@ -92,11 +105,55 @@ class EditVideoType extends Component {
 		);
 	}
 
+	// If a box is checked for the first time, open the configuration window for the platform
+	updatePlatform (platform, event) {
+
+		if (!this.state.platformConfig[platform] && event.target.checked) {
+			return this.configurePlatform(platform);
+		}
+
+		let renderType = this.props.videoType;
+		this.props.updatePlatform(platform, renderType, event);
+	}
+
+	// Callback to specifically open a configuration window for a platform
+	configurePlatform (platform) {
+		this.openSubView(platform);
+	}
+
+	saveConfiguration (platform, data) {
+		this.setState({
+			platformConfig: Object.assign({}, this.state.platformConfig, { 
+				[platform]: data
+			})
+		}, () => {
+			let renderType = this.props.videoType;
+			this.props.updatePlatform(platform, renderType, { target: { checked: true }});
+		})
+	}
+
+	openSubView (view) {
+		this.setState({
+			subview: view
+		})
+	}
+
+	closeSubView (platform, saveData) {
+		if (saveData != undefined) {
+			this.saveConfiguration(platform, saveData);
+		}
+
+		this.setState({
+			subview: null
+		})
+	}
+
 	render () {
 		let renderType = this.props.videoType;
 
 		return (
 			<Card className={ this.getStyle() }>
+				{ this.renderDialog() }
 				<div className="selectionCard">
 					{ this.getRenderProgress() }
 					<CardActions>
@@ -124,9 +181,16 @@ class EditVideoType extends Component {
 									control={
 										<Checkbox
 											checked={ this.props.platforms[platform][renderType] }
-											onChange={ this.props.updatePlatform.bind(this, platform, renderType) } />
+											onChange={ this.updatePlatform.bind(this, platform) } />
 									}
-									label={ platformNames[platform] } />
+									label={
+										<div>
+											{ platformNames[platform] } &nbsp;&nbsp;
+											<Button onClick={ this.configurePlatform.bind(this, platform) }>
+												Edit
+											</Button>
+										</div>
+									} />
 							)}
 						</FormGroup>
 
@@ -134,6 +198,30 @@ class EditVideoType extends Component {
 				</div>
 			</Card>
 		);
+	}
+
+	renderDialog () {
+
+		switch (this.state.subview) {
+			case 'youtube':
+				return <YouTubeConfig
+					share={ this.state.share['youtube']}
+					saveAndClose={ this.closeSubView.bind(this, 'youtube') } />;
+			case 'facebook':
+				return <FacebookConfig
+					share={ this.state.share['facebook']}
+					saveAndClose={ this.closeSubView.bind(this, 'facebook') } />;
+			case 'twitter':
+				return <TwitterConfig
+					share={ this.state.share['twitter']}
+					saveAndClose={ this.closeSubView.bind(this, 'twitter') } />;
+			case 'instagram':
+				return <InstagramConfig
+					share={ this.state.share['instagram']}
+					saveAndClose={ this.closeSubView.bind(this, 'instagram') } />;
+			default:
+				return null;
+		}
 	}
 }
 
