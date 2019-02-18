@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
 
+import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import FacebookConfig from './config/Facebook';
 import YouTubeConfig from './config/YouTube';
@@ -35,14 +37,14 @@ class EditVideoType extends Component {
 
 	componentWillMount () {
 
-		let renderType = this.props.videoType;
+		let videoType = this.props.videoType;
 
 		// Convert big platforms object into an array of platforms we have available for this video type. 
-		let enabledPlatforms = Object.entries(this.props.enabledPlatforms).map((plat) => plat[1][renderType] ? plat[0] : null);
-		enabledPlatforms = enabledPlatforms.filter((a) => a != null);
+		let enabledProviders = Object.entries(this.props.enabledProviders).map((plat) => plat[1][videoType] ? plat[0] : null);
+		enabledProviders = enabledProviders.filter((a) => a != null);
 
 		this.setState({
-			enabledPlatforms: enabledPlatforms
+			enabledProviders: enabledProviders
 		})
 	}
 
@@ -77,7 +79,7 @@ class EditVideoType extends Component {
 		return renderState.level;
 	}
 
-	getRenderProgress (renderType) {
+	getRenderProgress (videoType) {
 		let renderState = this.props.renderState, video = this.props.video;
 
 		if (video == null || (!video.queued && !video.rendered)) {
@@ -87,7 +89,7 @@ class EditVideoType extends Component {
 		if (renderState && (renderState.status == 'completed') || this.props.video.rendered == true) {
 			return (
 				<div className="rendering-progress">
-					<Button onClick={ this.props.downloadVideo.bind(this, renderType) } variant="outlined">
+					<Button onClick={ this.props.downloadVideo.bind(this, videoType) } variant="outlined">
 						Download
 					</Button>
 				</div>
@@ -105,42 +107,51 @@ class EditVideoType extends Component {
 		);
 	}
 
+	findShareForPlatform (platform) {
+		let video = this.props.video;
+
+		if (!video) {
+			return null;
+		}
+
+		let shares = video.shares;
+		let share = shares.find((share) => share.platform.id == platform.id);
+
+		return share;
+	}
+
 	// If a box is checked for the first time, open the configuration window for the platform
 	updatePlatform (platform, event) {
 
-		if (!this.state.platformConfig[platform] && event.target.checked) {
+		if (!this.isPlatformEnabled(platform) && event.target.checked) {
 			return this.configurePlatform(platform);
 		}
 
-		let renderType = this.props.videoType;
-		this.props.updatePlatform(platform, renderType, event);
+		let videoType = this.props.videoType;
+		this.props.updatePlatform(platform, videoType, event);
 	}
 
 	// Callback to specifically open a configuration window for a platform
 	configurePlatform (platform) {
-		this.openSubView(platform);
+		this.openSubView(platform.platform_type, this.findShareForPlatform(platform), platform);
 	}
 
 	saveConfiguration (platform, data) {
-		this.setState({
-			platformConfig: Object.assign({}, this.state.platformConfig, { 
-				[platform]: data
-			})
-		}, () => {
-			let renderType = this.props.videoType;
-			this.props.updatePlatform(platform, renderType, { target: { checked: true }});
-		})
+		let videoType = this.props.videoType;
+		this.props.updatePlatform(platform, videoType, { target: { checked: true }}, data);
 	}
 
-	openSubView (view) {
+	openSubView (view, argument, stateData) {
 		this.setState({
-			subview: view
+			subview: view,
+			subviewArgument: argument,
+			subviewState: stateData
 		})
 	}
 
 	closeSubView (platform, saveData) {
 		if (saveData != undefined) {
-			this.saveConfiguration(platform, saveData);
+			this.saveConfiguration(this.state.subviewState, saveData);
 		}
 
 		this.setState({
@@ -148,8 +159,22 @@ class EditVideoType extends Component {
 		})
 	}
 
+	getPlatforms () {
+		return this.props.platforms.filter((a) => this.state.enabledProviders.indexOf(a.platform_type) > -1);
+	}
+
+	isPlatformEnabled (platformID) {
+		for (var i in this.props.video.shares) {
+			let share = this.props.video.shares[i];
+			if (share.platform.id == platformID) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	render () {
-		let renderType = this.props.videoType;
+		let videoType = this.props.videoType;
 
 		return (
 			<Card className={ this.getStyle() }>
@@ -176,19 +201,22 @@ class EditVideoType extends Component {
 						</p>
 
 						<FormGroup>
-							{ this.state.enabledPlatforms.map((platform) => 
+							{ this.getPlatforms().map((platform) => 
 								<FormControlLabel
 									control={
 										<Checkbox
-											checked={ this.props.platforms[platform][renderType] }
+											checked={ this.isPlatformEnabled(platform.id) }
 											onChange={ this.updatePlatform.bind(this, platform) } />
 									}
 									label={
 										<div>
-											{ platformNames[platform] } &nbsp;&nbsp;
-											<Button onClick={ this.configurePlatform.bind(this, platform) }>
-												Edit
-											</Button>
+											<FontAwesomeIcon icon={ platform.icon } />
+											&nbsp;&nbsp;
+											{ platform.name }
+											&nbsp;&nbsp;
+											<IconButton onClick={ this.configurePlatform.bind(this, platform) }>
+												<FontAwesomeIcon icon="pencil-alt" className="small-icon" />
+											</IconButton>
 										</div>
 									} />
 							)}
@@ -205,19 +233,19 @@ class EditVideoType extends Component {
 		switch (this.state.subview) {
 			case 'youtube':
 				return <YouTubeConfig
-					share={ this.state.share['youtube']}
+					share={ this.state.subviewArgument }
 					saveAndClose={ this.closeSubView.bind(this, 'youtube') } />;
 			case 'facebook':
 				return <FacebookConfig
-					share={ this.state.share['facebook']}
+					share={ this.state.subviewArgument }
 					saveAndClose={ this.closeSubView.bind(this, 'facebook') } />;
 			case 'twitter':
 				return <TwitterConfig
-					share={ this.state.share['twitter']}
+					share={ this.state.subviewArgument }
 					saveAndClose={ this.closeSubView.bind(this, 'twitter') } />;
 			case 'instagram':
 				return <InstagramConfig
-					share={ this.state.share['instagram']}
+					share={ this.state.subviewArgument }
 					saveAndClose={ this.closeSubView.bind(this, 'instagram') } />;
 			default:
 				return null;

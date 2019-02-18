@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_02_11_114241) do
+ActiveRecord::Schema.define(version: 2019_02_18_134212) do
 
   create_table "frames", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.bigint "user_id"
@@ -43,6 +43,7 @@ ActiveRecord::Schema.define(version: 2019_02_11_114241) do
     t.datetime "publish_on"
     t.boolean "shared", default: false
     t.bigint "platform_id"
+    t.text "configuration", limit: 4294967295
     t.index ["platform_id"], name: "index_shares_on_platform_id"
     t.index ["user_id"], name: "index_shares_on_user_id"
     t.index ["video_id"], name: "index_shares_on_video_id"

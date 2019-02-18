@@ -9,8 +9,9 @@ module OVE
 
 			def to_h
 				{
+					id: id,
 					created_by: user.id,
-					platform: platform,
+					platform: platform.to_h,
 					title: title,
 					description: description,
 					publish_on: publish_on,

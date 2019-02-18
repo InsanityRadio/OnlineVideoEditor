@@ -23,12 +23,26 @@ export default class DefaultConfig extends Component {
 		visibility: 'public'
 	}
 
+	componentWillMount () {
+		let share = this.props.share;
+
+		this.setState({
+			title: share.title,
+			description: share.description, 
+			... share.configuration
+		})
+	}
+
 	handleClose () {
 		this.props.saveAndClose(undefined);
 	}
 
 	handleSave () {
-		this.props.saveAndClose(this.state)
+		this.props.saveAndClose({
+			title: this.state.title,
+			description: this.state.description,
+			configuration: JSON.stringify(this.state)
+		})
 	}
 
 	updateLocalField (field, event) {

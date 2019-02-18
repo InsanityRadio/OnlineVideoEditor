@@ -10,26 +10,19 @@ const styles = theme => ({
 
 
 class Home extends Component {
-
 	render () {
 		return (
-
 			<div class="fullpage home">
-
 				<div class="main-navigation">
-
 					<div class="button">
-
 						<Link to="/import">New Video</Link>
 						<Link to="/imports">My Drafts</Link>
 						<Link to="/download">Quick Download</Link>
 
+						<Link to="/config">System Configuration</Link>
 					</div>
-
 				</div>
-
 			</div>
-
 		);
 	}
 }

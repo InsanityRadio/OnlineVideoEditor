@@ -3,6 +3,8 @@ module OVE
 		class Platform < ActiveRecord::Base
 			has_many :shares
 
+			validates :platform_type, inclusion: {:in => ['facebook', 'youtube', 'twitter', 'instagram']}
+
 			def to_h
 				{
 					id: id,
