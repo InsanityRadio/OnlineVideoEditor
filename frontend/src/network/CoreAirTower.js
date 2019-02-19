@@ -1,6 +1,7 @@
 import IAirTower from './IAirTower';
 
 import CoreImport from './models/CoreImport';
+import Platform from './models/Platform';
 import Slate from './models/Slate';
 
 export default class CoreAirTower extends IAirTower {
@@ -131,6 +132,15 @@ export default class CoreAirTower extends IAirTower {
 		return new Slate(slateObj);
 	}
 
+	createPlatformObj (response) {
+		if (response.success != 1) {
+			throw new Error('Failed to load slate');
+		}
+
+		let platformObj = response['platform'];
+		return new Platform(platformObj);
+	}
+
 	loadSlates () {
 		return this.fetch('/slates/')
 			.then((response) => {
@@ -150,6 +160,52 @@ export default class CoreAirTower extends IAirTower {
 
 	deleteSlate (id) {
 		return this.fetchWithForm('/slates/delete', { id: id }, {});
+	}
+
+	loadPlatforms () {
+		return this.fetch('/platform/')
+			.then((response) => {
+				if (!response.success) {
+					throw new Error('Failed to load list of platforms from server');
+				}
+
+				let slates = response.platforms.map((slateObj) => new Platform(slateObj));
+				return slates;
+			});
+	}
+
+	createPlatform (platform_type, name, configuration) {
+		return this.fetchWithForm('/platform/new', {}, { name, platform_type, configuration })
+			.then((response) => this.createPlatformObj(response));
+	}
+
+	updatePlatform (id, name, configuration) {
+		return this.fetchWithForm('/platform/' + id + '/save', {}, { name, configuration })
+			.then((response) => this.createPlatformObj(response));
+	}
+
+	deletePlatform (id) {
+		return this.fetchWithForm('/platform/' + id + '/delete', { id: id }, {});
+	}
+
+	createShare (uuid, videoID, platform_id, title, description, configuration) {
+		return this.fetchWithForm('/import/' + uuid + '/' + videoID + '/share/new', {}, { platform_id, title, description, configuration })
+			.then((response) => this.createImportObj(response));
+	}
+
+	updateShare (uuid, videoID, shareID, title, description, configuration) {
+		return this.fetchWithForm('/import/' + uuid + '/' + videoID + '/share/' + shareID + '/save', {}, { title, description, configuration })
+			.then((response) => this.createImportObj(response));
+	}
+
+	deleteShare (uuid, videoID, shareID) {
+		return this.fetchWithForm('/import/' + uuid + '/' + videoID + '/share/' + shareID + '/delete', {}, {})
+			.then((response) => this.createImportObj(response));
+	}
+
+	publishShare (uuid, videoID, shareID) {
+		return this.fetchWithForm('/import/' + uuid + '/' + videoID + '/share/' + shareID + '/now', {}, {})
+			.then((response) => response.success == 1);
 	}
 
 }

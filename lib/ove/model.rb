@@ -5,6 +5,7 @@ module OVE
 end
 
 require_relative './model/import'
+require_relative './model/platform'
 require_relative './model/share'
 require_relative './model/slate'
 require_relative './model/user'

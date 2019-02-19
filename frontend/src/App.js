@@ -7,10 +7,16 @@ import logo from './logo.svg';
 
 import AirTower from './network/AirTower';
 
+import ConfigComponent from './config/Config';
+import CreatePlatformComponent from './config/CreatePlatform';
+import EditPlatformComponent from './config/EditPlatform';
+
 import EditComponent from './edit/Edit';
 import HomeComponent from './home/Home';
 import ImportComponent from './import/Import';
 import ImportsComponent from './imports/Imports';
+import PreloadComponent from './Preload';
+
 
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 
@@ -29,8 +35,18 @@ import {
 	faSave,
 	faPlus,
 	faFileVideo,
+	faTrash,
+	faDownload,
+	faPencilAlt,
 	faStopwatch
 } from '@fortawesome/free-solid-svg-icons';
+
+import {
+	faFacebookF,
+	faTwitter,
+	faInstagram,
+	faYoutube
+} from '@fortawesome/free-brands-svg-icons';
 
 library.add(
 	faPlay,
@@ -42,7 +58,14 @@ library.add(
 	faSave,
 	faPlus,
 	faFileVideo,
-	faStopwatch
+	faPencilAlt,
+	faTrash,
+	faDownload,
+	faStopwatch,
+	faFacebookF,
+	faTwitter,
+	faInstagram,
+	faYoutube
 );
 
 
@@ -66,7 +89,7 @@ class App extends Component {
 	render () {
 
 		if (!this.state.ready) {
-			return null;
+			return <PreloadComponent />
 		}
 
 		return (
@@ -76,6 +99,9 @@ class App extends Component {
 					<Route exact path="/import" component={ ImportComponent } />
 					<Route exact path="/imports" component={ ImportsComponent } />
 					<Route path="/import/:id/edit" component={ EditComponent } />
+					<Route exact path="/config" component={ ConfigComponent } />
+					<Route path="/config/platform/:id" component={ EditPlatformComponent } />
+					<Route exact path="/config/platform/new" component={ CreatePlatformComponent } />
 				</MuiThemeProvider>
 			</BrowserRouter>
 		);

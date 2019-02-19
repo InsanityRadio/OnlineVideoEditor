@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_02_10_214506) do
+ActiveRecord::Schema.define(version: 2019_02_19_112406) do
 
   create_table "frames", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.bigint "user_id"
@@ -28,14 +28,24 @@ ActiveRecord::Schema.define(version: 2019_02_10_214506) do
     t.index ["user_id"], name: "index_imports_on_user_id"
   end
 
+  create_table "platforms", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "name"
+    t.text "default_share_text"
+    t.string "platform_type"
+    t.text "configuration", limit: 4294967295
+  end
+
   create_table "shares", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.bigint "video_id"
     t.bigint "user_id"
-    t.string "platform"
     t.string "title"
     t.text "description"
     t.datetime "publish_on"
     t.boolean "shared", default: false
+    t.bigint "platform_id"
+    t.text "configuration", limit: 4294967295
+    t.boolean "queued", default: false
+    t.index ["platform_id"], name: "index_shares_on_platform_id"
     t.index ["user_id"], name: "index_shares_on_user_id"
     t.index ["video_id"], name: "index_shares_on_video_id"
   end
