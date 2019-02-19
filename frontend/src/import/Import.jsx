@@ -161,11 +161,28 @@ class Import extends Component {
 		this.importVideo()
 			.then((importObj) => {
 				console.log('IMPORT OBJECT 2', importObj)
+				this.props.history.push('/import/' + importObj.uuid + '/edit');
 			});
 	}
 
-	cancel () {
+	/**
+	 * Quickly download video between two specified times. 
+	 * This call is deferred to the backend! 
+	 */
+	quickDownload () {
+		window.open('/api/ingest/'
+			+ this.getServiceName()
+			+ '/download.mp4?start_time='
+			+ this.state.segmentStart
+			+ '&end_time=' + this.state.segmentEnd,
+			'_blank')
+	}
 
+	/**
+	 * Escape back to the main page
+	 */
+	handleClose () {
+		this.props.history.push('/');
 	}
 
 	render () {
@@ -216,7 +233,7 @@ class Import extends Component {
 								<IconButton
 										color="inherit"
 										aria-label="Save For Later"
-										onClick={ this.cancel.bind(this) } >
+										onClick={ this.handleClose.bind(this) } >
 									<FontAwesomeIcon icon="long-arrow-alt-left" />
 								</IconButton>
 
@@ -230,13 +247,13 @@ class Import extends Component {
 
 							<h3>1. Find Content</h3>
 
-							<div style={{ display: 'flex', justifyContent: 'space-between' }}>
-								<Button variant="contained" color="secondary">
-									<FontAwesomeIcon icon="stopwatch" />{' '} Search By Time
+							<div class="row">
+								<Button variant="contained" color="secondary" fullWidth={ true }>
+									<FontAwesomeIcon icon="stopwatch" />&nbsp;Search By Time
 								</Button>
 
-								<Button variant="contained" color="secondary">
-									<FontAwesomeIcon icon="file-video" /> Search By Clip
+								<Button variant="contained" color="secondary" fullWidth={ true }>
+									<FontAwesomeIcon icon="file-video" />&nbsp;Search By Clip
 								</Button>
 							</div>
 
@@ -259,15 +276,25 @@ class Import extends Component {
 							<br /><br />
 
 							<h3>3. Import</h3>
-							<Button
-									variant="contained"
-									color="primary"
-									fullWidth={ true }
-									className="padded-button"
-									onClick={ this.saveForLater.bind(this) }>
-								Save For Later
-							</Button>
 
+							<div class="row">
+								<Button
+										variant="contained"
+										color="primary"
+										fullWidth={ true }
+										className="padded-button"
+										onClick={ this.saveForLater.bind(this) }>
+									Save For Later
+								</Button>
+								<Button
+										variant="contained"
+										color="primary"
+										fullWidth={ true }
+										className="padded-button"
+										onClick={ this.quickDownload.bind(this) }>
+									Quick Download
+								</Button>
+							</div>
 							<Button
 									variant="contained"
 									color="secondary"

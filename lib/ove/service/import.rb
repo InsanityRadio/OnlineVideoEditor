@@ -108,6 +108,21 @@ module OVE
 				import.generate_hls
 			end
 
+
+			get '/:service/import/:id/preview.jpg' do |service, id|
+				my_sources = OVE::Ingest::SourceProvider.instance.sources
+				source = my_sources.find { |s| s.service == service }
+
+				halt 404 unless service
+
+				importer = OVE::Import::Import.instance
+				import = importer.find_by_id source, id
+
+				halt 404 unless import
+
+				send_file(import.thumbnail_path, :disposition => 'inline', :filename => 'thumbnail.jpg')
+			end
+
 			get '/:service/import/:id/download.mp4' do |service, id|
 				my_sources = OVE::Ingest::SourceProvider.instance.sources
 				source = my_sources.find { |s| s.service == service }
@@ -128,11 +143,12 @@ module OVE
 					halt 500 unless wait_thr.value.success?
 
 					# Write headers to make file download easier.
-					content_type 'application/x-mpegURL'
+					content_type 'video/mp4'
 					response.header['Content-Length'] = File.size(out_path)
 
 					file = File.open(out_path, 'rb')
 
+					# We can't use send_file here, as it will be garbage collected before the call ends
 					stream do | out |
 						until file.closed? or out.closed?
 							data = file.read(4096)

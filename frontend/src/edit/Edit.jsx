@@ -15,6 +15,8 @@ import TextField from '@material-ui/core/TextField';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 import AirTower from '../network/AirTower';
 
 import FrameComponent from '../frame/Frame';
@@ -38,6 +40,7 @@ class Edit extends Component {
 	state = {
 		importObj: null,
 		currentTime: 0,
+		lastSaveTime: 0,
 		video: {
 			playing: false
 		},
@@ -121,7 +124,8 @@ class Edit extends Component {
 		airTower.core.findImportByID(this.getImportID())
 			.then((coreImportObj) => {
 				this.setState({
-					coreImportObj: coreImportObj
+					coreImportObj: coreImportObj,
+					videoTitle: coreImportObj.title
 				}, () => this.checkForVideos());
 			})
 			.catch((error) => {
@@ -276,10 +280,17 @@ class Edit extends Component {
 		return this.state.importObj.getPreviewPath();
 	}
 
-	updateLocalField (field, event) {
+	updateLocalField (field, event, callback) {
 		this.setState({
 			[field]:  event.target[event.target.hasOwnProperty('checked') ? 'checked' : 'value']
-		}, () => this.checkAndCreateVideos());
+		}, () => callback() || this.checkAndCreateVideos());
+	}
+
+	updateLocalFieldAndSave (field, event) {
+		this.updateLocalField(field, event, () => {
+			this.rateLimitSave();
+			return this.checkAndCreateVideos();
+		});
 	}
 
 	openSubView (url) {
@@ -299,15 +310,24 @@ class Edit extends Component {
 		this.props.history.replace(this.props.location.pathname + '/..');
 	}
 
+	rateLimitSave () {
+		if (this.saveTimer) {
+			return;
+		}
+		this.saveTimer = setTimeout(this.save.bind(this), 500);
+	}
+
 	save () {
+		this.saveTimer = null;
+
 		let airTower = AirTower.getInstance();
 		airTower.core.takeOwnership(this.getServiceName(), this.getImportID(), this.state.videoTitle)
-			.then((coreImportObj) => {
+		/*	.then((coreImportObj) => {
 				coreImportObj.set('title', this.state.videoTitle);
 				this.setState({
 					coreImportObj: this.state.coreImportObj
 				});
-			});
+			});*/
 	}
 
 	sendRender () {
@@ -357,6 +377,13 @@ class Edit extends Component {
 			return null;
 		}
 		return this.state.renderState.find((state) => state.video_id == video.id);
+	}
+
+	/**
+	 * Escape back to the main page
+	 */
+	handleClose () {
+		this.props.history.push('/imports');
 	}
 	
 	render () {
@@ -430,14 +457,11 @@ class Edit extends Component {
 								<div style={{ flex: 1 }}>
 									<TextField
 										fullWidth={ true }
-										defaultValue={ this.state.coreImportObj.title || 'Untitled' }
+										placeholder={ 'Untitled' }
 										value={ this.state.videoTitle }
-										onChange={ this.updateLocalField.bind(this, 'videoTitle') }
+										onChange={ this.updateLocalFieldAndSave.bind(this, 'videoTitle') }
 										margin="normal" />
 								</div>
-								<IconButton color="inherit" aria-label="Menu" onClick={ this.save.bind(this) }>
-									S
-								</IconButton>
 							</Toolbar>
 						</AppBar>
 

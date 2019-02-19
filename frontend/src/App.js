@@ -17,6 +17,8 @@ import ImportComponent from './import/Import';
 import ImportsComponent from './imports/Imports';
 import PreloadComponent from './Preload';
 
+import Header from './navigation/Header';
+import Navigation from './navigation/Navigation';
 
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 
@@ -95,13 +97,20 @@ class App extends Component {
 		return (
 			<BrowserRouter>
 				<MuiThemeProvider theme={theme}>
-					<Route exact path="/" component={ HomeComponent } />
-					<Route exact path="/import" component={ ImportComponent } />
-					<Route exact path="/imports" component={ ImportsComponent } />
-					<Route path="/import/:id/edit" component={ EditComponent } />
-					<Route exact path="/config" component={ ConfigComponent } />
-					<Route path="/config/platform/:id" component={ EditPlatformComponent } />
-					<Route exact path="/config/platform/new" component={ CreatePlatformComponent } />
+					<div className="page-master">
+						<div className="page-container">
+							<Navigation />
+							<div className="page-outlet">
+								<Route exact path="/" component={ HomeComponent } />
+								<Route exact path="/import" component={ ImportComponent } />
+								<Route exact path="/imports" component={ ImportsComponent } />
+								<Route path="/import/:id/edit" component={ EditComponent } />
+								<Route exact path="/config" component={ ConfigComponent } />
+								<Route path="/config/platform/:id" component={ EditPlatformComponent } />
+								<Route exact path="/config/platform/new" component={ CreatePlatformComponent } />
+							</div>
+						</div>
+					</div>
 				</MuiThemeProvider>
 			</BrowserRouter>
 		);

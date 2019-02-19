@@ -326,6 +326,12 @@ class Timeline extends Component {
 			viewportStart: this.props.offset || this.props.initialOffset
 		});
 
+		this.resizeCanvasLocalised = this.resizeCanvas.bind(this);
+		window.addEventListener('resize', this.resizeCanvasLocalised);
+	}
+
+	componentWillUnmount () {
+		window.removeEventListener('resize', this.resizeCanvasLocalised);
 	}
 
 	setCanvas (c) {
@@ -353,15 +359,11 @@ class Timeline extends Component {
 	}
 
 	resizeCanvas () {
-
 		var dpr = window.devicePixelRatio || 1;
 		this.canvas.width = this.canvas.offsetWidth * dpr;
 		this.canvas.height = this.canvas.offsetHeight * dpr;
-
 		this.canvas.getContext('2d').scale(dpr, dpr);
-
 		this.canvasWidth = this.canvas.offsetWidth;
-
 	}
 
 	getZoom (level) {

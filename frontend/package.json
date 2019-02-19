@@ -11,6 +11,7 @@
     "@material-ui/icons": "^3.0.2",
     "hls.js": "^0.12.1",
     "http-proxy-middleware": "^0.19.1",
+    "material-ui-next-pickers": "0.0.19",
     "material-ui-slider": "^3.0.0",
     "moment": "^2.22.2",
     "react": "^16.5.2",

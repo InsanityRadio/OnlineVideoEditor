@@ -10,7 +10,7 @@ class VideoThumbnail extends Component {
 			<div className="video-thumbnail-video">
 				<Button variant="outlined" onClick={ this.props.onClick }>
 					<div>
-						<img src={ this.props.thumbnail} />
+						<img src={ this.props.thumbnail } />
 						<p>{ this.props.title }</p>
 					</div>
 				</Button>

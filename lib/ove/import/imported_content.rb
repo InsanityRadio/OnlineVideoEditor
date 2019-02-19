@@ -40,7 +40,8 @@ module OVE
 			def generate_hls
 				hls_generator = OVE::HLS::Manifest.new_blank
 				hls_generator.header = [
-					'#EXT-X-START:TIME-OFFSET=' + (start_offset / 1000.0).to_s + ',PRECISE=YES'
+					'#EXT-X-START:TIME-OFFSET=' + (start_offset / 1000.0).to_s + ',PRECISE=YES',
+					'#EXT-X-ENDLIST'
 				]
 				hls_generator.chunks = @chunks
 				hls_generator.to_s
@@ -50,6 +51,11 @@ module OVE
 				paths = @chunks.map { |chunk| @root_path + chunk.path }
 
 				OVE::Transmux::TSMP4.ts_to_mp4(paths)
+			end
+
+			def thumbnail_path
+				target_chunk = @chunks[[@chunks.length - 1, 2].min]
+				@root_path + target_chunk.path
 			end
 
 		end

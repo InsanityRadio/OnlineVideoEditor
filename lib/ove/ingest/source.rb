@@ -66,6 +66,13 @@ module OVE
 				hls_generator.to_s
 			end
 
+			def generate_mp4(start_time, end_time)
+				chunks = find_chunks start_time, end_time
+				paths = chunks.map { |chunk| @root_path + chunk.path }
+
+				OVE::Transmux::TSMP4.ts_to_mp4(paths)
+			end
+
 			# Finds a list of chunks between the given start and end time.
 			def find_chunks(start_time, end_time)
 				chunk_paths = all_chunk_paths

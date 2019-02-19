@@ -30,6 +30,16 @@ export default class CoreAirTower extends IAirTower {
 		return this.services;
 	}
 
+	loadImports () {
+		return this.fetch('/_/imports')
+			.then ((response) => {
+				if (response.success != 1) {
+					throw new Error('Failed to load a list of imports from the server!');
+				}
+
+				return response['imports'].map((imp) => new CoreImport(imp));
+			});
+	}
 	/**
 	 * Find all active imports from service
 	 *
