@@ -40,7 +40,8 @@ module OVE
 			def generate_hls
 				hls_generator = OVE::HLS::Manifest.new_blank
 				hls_generator.header = [
-					'#EXT-X-START:TIME-OFFSET=' + (start_offset / 1000.0).to_s + ',PRECISE=YES'
+					'#EXT-X-START:TIME-OFFSET=' + (start_offset / 1000.0).to_s + ',PRECISE=YES',
+					'#EXT-X-ENDLIST'
 				]
 				hls_generator.chunks = @chunks
 				hls_generator.to_s
