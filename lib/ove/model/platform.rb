@@ -14,6 +14,13 @@ module OVE
 					configuration: configuration
 				}
 			end
+
+			# Depending on platform_type, we should ensure that the user-entered settings are valid.
+			# This might mean taking a client-side token and converting it to a server-side token of indefinite length
+			def validate_connection
+				provider = OVE::Share::PlatformProvider.find platform_type
+				provider.validate(self)
+			end
 		end
 	end
 end

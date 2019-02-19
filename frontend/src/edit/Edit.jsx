@@ -209,13 +209,9 @@ class Edit extends Component {
 
 		if (share) {
 			if (!enabled) {
-				// delete share
-				console.log('DELETING SHARE', share)
 				airTower.core.deleteShare(this.getImportID(), video.id, share.id)
 					.then((coreImportObj) => this.setState({ coreImportObj }))
 			} else {
-				// update config
-				console.log('UPDATING CONFIG FOR SHARE', share)
 				airTower.core.updateShare(
 					this.getImportID(),
 					video.id,
@@ -225,11 +221,10 @@ class Edit extends Component {
 					configuration.configuration
 				)
 					.then((coreImportObj) => this.setState({ coreImportObj }))
+					.then(() => configuration.immediate && this.publishShare(video, share))
 			}
 		} else {
 			if (enabled) {
-				// create share with config
-				console.log('CREATING NEW SHARE: ', platform, videoType, enabled, configuration)
 				airTower.core.createShare(
 					this.getImportID(),
 					video.id,
@@ -241,6 +236,13 @@ class Edit extends Component {
 					.then((coreImportObj) => this.setState({ coreImportObj }))
 			}
 		}
+	}
+
+	publishShare (video, share) {
+		let airTower = AirTower.getInstance();
+		console.log('Publishing share', share);
+		airTower.core.publishShare(this.getImportID(), video.id, share.id)
+			.then((resp) => console.log(resp));
 	}
 
 	findShareForPlatformAndType (platform, videoType) {

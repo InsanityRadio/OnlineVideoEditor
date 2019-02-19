@@ -122,6 +122,15 @@ export default class CoreAirTower extends IAirTower {
 		return new Slate(slateObj);
 	}
 
+	createPlatformObj (response) {
+		if (response.success != 1) {
+			throw new Error('Failed to load slate');
+		}
+
+		let platformObj = response['platform'];
+		return new Platform(platformObj);
+	}
+
 	loadSlates () {
 		return this.fetch('/slates/')
 			.then((response) => {
@@ -182,6 +191,11 @@ export default class CoreAirTower extends IAirTower {
 	deleteShare (uuid, videoID, shareID) {
 		return this.fetchWithForm('/import/' + uuid + '/' + videoID + '/share/' + shareID + '/delete', {}, {})
 			.then((response) => this.createImportObj(response));
+	}
+
+	publishShare (uuid, videoID, shareID) {
+		return this.fetchWithForm('/import/' + uuid + '/' + videoID + '/share/' + shareID + '/now', {}, {})
+			.then((response) => response.success == 1);
 	}
 
 }

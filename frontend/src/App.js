@@ -35,6 +35,8 @@ import {
 	faSave,
 	faPlus,
 	faFileVideo,
+	faTrash,
+	faDownload,
 	faPencilAlt,
 	faStopwatch
 } from '@fortawesome/free-solid-svg-icons';
@@ -57,6 +59,8 @@ library.add(
 	faPlus,
 	faFileVideo,
 	faPencilAlt,
+	faTrash,
+	faDownload,
 	faStopwatch,
 	faFacebookF,
 	faTwitter,

@@ -257,8 +257,6 @@
 .platform-menu-selector {
 	max-width: 800px;
 	width: 100% !important;
-	display: flex;
-	justify-content: center;
 }
 
 .fullpage.one-page {
@@ -279,4 +277,24 @@
 svg.small-icon {
 	width: 0.5em !important;
 	height: 0.5em;
+}
+
+.title-with-action-button {
+	display: flex;
+}
+
+.title-with-action-button > *:first-child {
+	flex: 1;
+}
+
+.icon-container {
+	display: inline-block;
+	margin-right: 0.8rem;
+	width: 1em;
+}
+
+.platform-list-container {
+	display: flex;
+	width: 100%;
+	justify-content: space-around;
 }

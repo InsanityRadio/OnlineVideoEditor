@@ -6,9 +6,12 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
+import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
+
+import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
 
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
@@ -35,13 +38,7 @@ export default class FacebookAuthorisation extends Component {
 
 	facebookReady () {
 		window.FB.getLoginStatus((response) => {
-			if (response.status == 'connected') {
-				this.setState({
-					connected: true
-				}, () => this.findPages());
-			}
 		})
-
 	}
 
 	facebookLogin () {
@@ -51,13 +48,12 @@ export default class FacebookAuthorisation extends Component {
 					connected: true
 				}, () => this.findPages());
 			}
-		}, { scope: ['instagram_basic', 'manage_pages'] })
+		}, { auth_type: 'reauthenticate', scope: ['instagram_basic', 'manage_pages', 'publish_pages'] })
 	}
 
 	findPages () {
 		return new Promise((resolve, reject) => {
 			window.FB.api('/me/accounts', (response) => {
-				console.log('loaded user accounts', response)
 				this.setState({
 					facebookPages: response.data
 				}); //, () => this.findInstagramPages())
@@ -70,7 +66,6 @@ export default class FacebookAuthorisation extends Component {
 
 		this.state.facebookPages.forEach((page) => {
 			window.FB.api('/' + page.id + '?fields=instagram_business_account', (response) => {
-				console.log('fuck', response)
 				if (response.instagram_business_account != null) {
 					visiblePages.push(page)
 					this.setState({
@@ -87,7 +82,7 @@ export default class FacebookAuthorisation extends Component {
 
 	render () {
 		return (
-			<div>
+			<div style={{ width: '100%' }}>
 				{ this.state.connected ? this.renderPageSelection() : this.renderAuthentication() }
 			</div>
 		);
@@ -113,7 +108,8 @@ export default class FacebookAuthorisation extends Component {
 
 		let configuration = {
 			page_id: pageID,
-			access_token: fbAccessToken
+			user_access_token: window.FB.getAuthResponse()['accessToken'],
+			page_access_token: fbAccessToken
 		};
 
 		this.props.createPlatform(
@@ -125,7 +121,7 @@ export default class FacebookAuthorisation extends Component {
 
 	renderPageSelection () {
 		return (
-			<div>
+			<div style={{ width: '100%' }}>
 				<FormControl variant="outlined" fullWidth={ true }>
 					<Select
 						fullWidth={ true }
@@ -138,9 +134,12 @@ export default class FacebookAuthorisation extends Component {
 						))}
 					</Select>
 				</FormControl>
-				<Button variant="outlined" onClick={ this.connectPage.bind(this) }>
-					{ this.props.instagram ? 'Link Instagram' : 'Connect Page' }
-				</Button>
+				<Divider />
+				<ExpansionPanelActions>
+					<Button onClick={ this.connectPage.bind(this) }>
+						{ this.props.instagram ? 'Link Instagram' : 'Connect Page' }
+					</Button>
+				</ExpansionPanelActions>
 			</div>
 		);
 	}
@@ -148,7 +147,7 @@ export default class FacebookAuthorisation extends Component {
 	renderAuthentication () {
 		return (
 			<Button variant="outlined" onClick={ this.facebookLogin.bind(this) }>
-				Connect To Facebook
+				Authorize Account
 			</Button>
 		);
 	}

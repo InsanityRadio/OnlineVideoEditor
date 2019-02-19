@@ -10,3 +10,4 @@ end
 Resque.redis = ENV['REDIS'] if ENV['REDIS'] != nil
 
 require_relative './worker/render'
+require_relative './worker/share'

@@ -9,6 +9,10 @@ import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import IconButton from '@material-ui/core/IconButton';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import MenuItem from '@material-ui/core/MenuItem';
+import MenuList from '@material-ui/core/MenuList';
 import Typography from '@material-ui/core/Typography';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -79,21 +83,11 @@ class EditVideoType extends Component {
 		return renderState.level;
 	}
 
-	getRenderProgress (videoType) {
+	renderRenderProgress (videoType) {
 		let renderState = this.props.renderState, video = this.props.video;
 
 		if (video == null || (!video.queued && !video.rendered)) {
 			return null;
-		}
-
-		if (renderState && (renderState.status == 'completed') || this.props.video.rendered == true) {
-			return (
-				<div className="rendering-progress">
-					<Button onClick={ this.props.downloadVideo.bind(this, videoType) } variant="outlined">
-						Download
-					</Button>
-				</div>
-			);
 		}
 
 		return (
@@ -103,6 +97,48 @@ class EditVideoType extends Component {
 					style={{ width: this.getRenderProgressPC() + '%' }}>
 				</div>
 				<p>{ renderState ? renderState.state : 'N/A' }</p>
+			</div>
+		);
+	}
+
+	reset () {
+
+	}
+
+	renderPostOptions () {
+		let videoType = this.props.videoType;
+
+		return (
+			<div>
+				<CardContent>
+					<div class="title-with-action-button">
+						<Typography variant="h5" component="h2">
+							{ this.props.description }
+						</Typography>
+						<IconButton onClick={ this.props.downloadVideo.bind(this, videoType) }>
+							<FontAwesomeIcon icon="download" className="small-icon" />
+						</IconButton>
+						<IconButton onClick={ this.reset() }>
+							<FontAwesomeIcon icon="trash" className="small-icon" />
+						</IconButton>
+					</div>
+
+					<p>
+						Send To Platforms
+					</p>
+
+					<MenuList fullWidth={ true } className="platform-menu-list">
+					{ this.getPlatforms().map((platform) => (
+						<MenuItem onClick={ this.configurePlatform.bind(this, platform) }>
+							<ListItemIcon>
+								<FontAwesomeIcon prefix="fab" icon={ platform.icon } />
+							</ListItemIcon>
+							<ListItemText primary={ platform.name } />
+						</MenuItem>
+					))}
+					</MenuList>
+
+				</CardContent>
 			</div>
 		);
 	}
@@ -128,7 +164,7 @@ class EditVideoType extends Component {
 		}
 
 		let videoType = this.props.videoType;
-		this.props.updatePlatform(platform, videoType, event);
+		this.props.updatePlatform(platform, videoType, event.target.checked);
 	}
 
 	// Callback to specifically open a configuration window for a platform
@@ -138,7 +174,7 @@ class EditVideoType extends Component {
 
 	saveConfiguration (platform, data) {
 		let videoType = this.props.videoType;
-		this.props.updatePlatform(platform, videoType, { target: { checked: true }}, data);
+		this.props.updatePlatform(platform, videoType, true, data);
 	}
 
 	openSubView (view, argument, stateData) {
@@ -173,80 +209,93 @@ class EditVideoType extends Component {
 		return false;
 	}
 
-	render () {
+	isVideoReady () {
+		let renderState = this.props.renderState, video = this.props.video;
+		return video && renderState && (renderState.status == 'completed') || this.props.video.rendered == true;
+	}
+
+	renderBody () {
 		let videoType = this.props.videoType;
 
+		if (this.isVideoReady()) {
+			return this.renderPostOptions();
+		}
+
+		return (
+			<div className="selectionCard">
+				{ this.renderRenderProgress() }
+				<CardActions>
+					<Checkbox
+						checked={ this.props.enabled }
+						onChange={ this.props.updateState.bind(this) }
+						color="primary" />
+				</CardActions>
+				<CardContent>
+					<Typography variant="h5" component="h2">
+						{ this.props.description }
+						&nbsp;&nbsp;
+						<Button onClick={ this.props.openSubView.bind(this) }>
+							Edit
+						</Button>
+					</Typography>
+
+					<p>
+						Select platforms to share on
+					</p>
+
+					<FormGroup>
+						{ this.getPlatforms().map((platform) => 
+							<FormControlLabel
+								control={
+									<Checkbox
+										checked={ this.isPlatformEnabled(platform.id) }
+										onChange={ this.updatePlatform.bind(this, platform) } />
+								}
+								label={
+									<div>
+										<FontAwesomeIcon icon={ platform.icon } />
+										&nbsp;&nbsp;
+										{ platform.name }
+										&nbsp;&nbsp;
+										<IconButton onClick={ this.configurePlatform.bind(this, platform) }>
+											<FontAwesomeIcon icon="pencil-alt" className="small-icon" />
+										</IconButton>
+									</div>
+								} />
+						)}
+					</FormGroup>
+
+				</CardContent>
+			</div>
+		);
+	}
+
+	render () {
 		return (
 			<Card className={ this.getStyle() }>
 				{ this.renderDialog() }
-				<div className="selectionCard">
-					{ this.getRenderProgress() }
-					<CardActions>
-						<Checkbox
-							checked={ this.props.enabled }
-							onChange={ this.props.updateState.bind(this) }
-							color="primary" />
-					</CardActions>
-					<CardContent>
-						<Typography variant="h5" component="h2">
-							{ this.props.description }
-							&nbsp;&nbsp;
-							<Button onClick={ this.props.openSubView.bind(this) }>
-								Edit
-							</Button>
-						</Typography>
-
-						<p>
-							Select platforms to share on
-						</p>
-
-						<FormGroup>
-							{ this.getPlatforms().map((platform) => 
-								<FormControlLabel
-									control={
-										<Checkbox
-											checked={ this.isPlatformEnabled(platform.id) }
-											onChange={ this.updatePlatform.bind(this, platform) } />
-									}
-									label={
-										<div>
-											<FontAwesomeIcon icon={ platform.icon } />
-											&nbsp;&nbsp;
-											{ platform.name }
-											&nbsp;&nbsp;
-											<IconButton onClick={ this.configurePlatform.bind(this, platform) }>
-												<FontAwesomeIcon icon="pencil-alt" className="small-icon" />
-											</IconButton>
-										</div>
-									} />
-							)}
-						</FormGroup>
-
-					</CardContent>
-				</div>
+				{ this.renderBody() }
 			</Card>
-		);
+		)
 	}
 
 	renderDialog () {
 
+		let props = {
+			share: this.state.subviewArgument,
+			saveAndClose: this.closeSubView.bind(this, this.state.subview),
+			immediate: this.isVideoReady()
+		}
+
 		switch (this.state.subview) {
 			case 'youtube':
-				return <YouTubeConfig
-					share={ this.state.subviewArgument }
-					saveAndClose={ this.closeSubView.bind(this, 'youtube') } />;
+				return <YouTubeConfig {...props} />;
 			case 'facebook':
-				return <FacebookConfig
-					share={ this.state.subviewArgument }
-					saveAndClose={ this.closeSubView.bind(this, 'facebook') } />;
+				return <FacebookConfig {...props} />;
 			case 'twitter':
-				return <TwitterConfig
-					share={ this.state.subviewArgument }
-					saveAndClose={ this.closeSubView.bind(this, 'twitter') } />;
+				return <TwitterConfig {...props} />;
 			case 'instagram':
-				return <InstagramConfig
-					share={ this.state.subviewArgument }
-					saveAndClose={ this.closeSubView.bind(this, 'instagram') } />;
+				return <InstagramConfig {...props} />;
 			default:
 				return null;
 		}

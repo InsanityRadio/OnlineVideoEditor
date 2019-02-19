@@ -255,6 +255,8 @@ module OVE
 					default_share_text: params['default_share_text'],
 					configuration: params['configuration']
 				)
+
+				platform.validate_connection
 				platform.save
 
 				send_json(
@@ -277,15 +279,17 @@ module OVE
 			post '/platform/:platform_id/save' do |platform_id|
 				authorize!
 
-				platform_id = params['platform'].to_i
-
 				platform = Model::Platform.find_by(id: platform_id)
 				halt 404 if platform == nil
 
 				platform.name = params['name'].to_s if params['name'] != nil
 				platform.default_share_text = params['default_share_text'].to_s if params['default_share_text'] != nil
-				platform.configuration = params['configuration'] if params['configuration'] != nil
 
+				if params['configuration'] != nil
+					platform.configuration = params['configuration'] 
+					platform.validate_connection
+				end
+				
 				platform.save
 
 				send_json(
@@ -380,13 +384,32 @@ module OVE
 				video = Model::Video.find_by(id: video_id)
 				share = Model::Share.find_by(id: share_id)
 
-				halt 405 if video.queued or video.rendered
+				halt 405 if share.shared
 
 				share.destroy
 
 				send_json(
 					success: 1,
 					import: video.import.to_h,
+				)
+			end
+
+			post '/import/:uuid/:video_id/share/:share_id/now' do |uuid, video_id, share_id|
+				authorize!
+
+				video = Model::Video.find_by(id: video_id)
+				share = Model::Share.find_by(id: share_id)
+
+				halt 405 if share.queued or share.shared or !video.rendered
+
+				share.queued = true
+				share.save
+
+				worker_id = OVE::Worker::Share.create(share_id: share.id)
+
+				send_json(
+					success: 1,
+					worker_id: worker_id
 				)
 			end
 		end

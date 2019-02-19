@@ -26,7 +26,7 @@ export default class DefaultConfig extends Component {
 	componentWillMount () {
 		let share = this.props.share;
 
-		this.setState({
+		share != undefined && this.setState({
 			title: share.title,
 			description: share.description, 
 			... share.configuration
@@ -41,7 +41,8 @@ export default class DefaultConfig extends Component {
 		this.props.saveAndClose({
 			title: this.state.title,
 			description: this.state.description,
-			configuration: JSON.stringify(this.state)
+			configuration: JSON.stringify(this.state),
+			immediate: this.props.immediate
 		})
 	}
 
@@ -82,7 +83,7 @@ export default class DefaultConfig extends Component {
 						Cancel
 					</Button>
 					<Button onClick={ this.handleSave.bind(this) } color="secondary" autofocus>
-						Save
+						{ this.props.immediate ? 'Share Now' : 'Save' }
 					</Button>
 				</DialogActions>
 			</Dialog>

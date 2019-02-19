@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'fakeredis'
 gem 'falcon'
+gem 'koala'
 gem 'mysql2'
 gem 'rake'
 gem 'redis', '< 4.0.0'
