@@ -200,6 +200,10 @@ class EditVideoType extends Component {
 	}
 
 	isPlatformEnabled (platformID) {
+		if (!this.props.video) {
+			return;
+		}
+
 		for (var i in this.props.video.shares) {
 			let share = this.props.video.shares[i];
 			if (share.platform.id == platformID) {
@@ -211,7 +215,7 @@ class EditVideoType extends Component {
 
 	isVideoReady () {
 		let renderState = this.props.renderState, video = this.props.video;
-		return video && renderState && (renderState.status == 'completed') || this.props.video.rendered == true;
+		return (renderState && renderState.status == 'completed') || (video && video.rendered == true);
 	}
 
 	renderBody () {
