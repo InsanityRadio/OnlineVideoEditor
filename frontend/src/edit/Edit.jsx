@@ -45,11 +45,12 @@ class Edit extends Component {
 		frame: false,
 		videoTitle: null,
 		platforms: {},
+		platformState: {},
 		subview: null,
 		renderState: []
 	}
 
-	platforms = {
+	providers = {
 		youtube: {
 			slate: true,
 			frame: false
@@ -71,19 +72,7 @@ class Edit extends Component {
 	componentWillMount () {
 		this.loadImport();
 		this.loadRenderState();
-
-		// Transform available platforms into a state object that holds whether or not they are enabled
-		let platforms = Object.assign({}, this.platforms);
-		for (var i in platforms) {
-			platforms[i] = Object.assign({}, platforms[i]);
-			for (var j in platforms[i]) {
-				platforms[i][j] = false;
-			}
-		}
-
-		this.setState({
-			platforms: platforms
-		})
+		this.loadPlatforms();
 
 		this.interval = setInterval(() => {
 
@@ -146,6 +135,12 @@ class Edit extends Component {
 			})
 	}
 
+	loadPlatforms () {
+		let airTower = AirTower.getInstance();
+		airTower.core.loadPlatforms()
+			.then((platforms) => this.setState({ platforms }));
+	}
+
 	loadRenderState () {
 		let airTower = AirTower.getInstance();
 
@@ -198,16 +193,69 @@ class Edit extends Component {
 
 		for (var i = 0; i < required.length; i++) {
 			airTower.core.createVideoByType(this.getImportID(), required[i])
-				.then((coreImportObj) => {
-					this.setState({
-						coreImportObj: coreImportObj
-					})
-				});
+				.then((coreImportObj) => this.setState({ coreImportObj }));
 		}
 	}
 
 	findVideoForType (type) {
 		return this.state.coreImportObj.videos.find((video) => video.type == type);
+	}
+
+	updatePlatform (platform, videoType, enabled, configuration) {
+		// if enabled, create platform for video type. otherwise, find it & delete it
+		let share = this.findShareForPlatformAndType(platform, videoType);
+		let video = this.findVideoForType(videoType);
+		let airTower = AirTower.getInstance();
+
+		if (share) {
+			if (!enabled) {
+				airTower.core.deleteShare(this.getImportID(), video.id, share.id)
+					.then((coreImportObj) => this.setState({ coreImportObj }))
+			} else {
+				airTower.core.updateShare(
+					this.getImportID(),
+					video.id,
+					share.id,
+					configuration.title,
+					configuration.description,
+					configuration.configuration
+				)
+					.then((coreImportObj) => this.setState({ coreImportObj }))
+					.then(() => configuration.immediate && this.publishShare(video, share))
+			}
+		} else {
+			if (enabled) {
+				airTower.core.createShare(
+					this.getImportID(),
+					video.id,
+					platform.id,
+					configuration.title,
+					configuration.description,
+					configuration.configuration
+				)
+					.then((coreImportObj) => this.setState({ coreImportObj }))
+			}
+		}
+	}
+
+	publishShare (video, share) {
+		let airTower = AirTower.getInstance();
+		console.log('Publishing share', share);
+		airTower.core.publishShare(this.getImportID(), video.id, share.id)
+			.then((resp) => console.log(resp));
+	}
+
+	findShareForPlatformAndType (platform, videoType) {
+		let video = this.findVideoForType(videoType);
+
+		if (!video) {
+			return null;
+		}
+
+		let shares = video.shares;
+		let share = shares.find((share) => share.platform.id == platform.id);
+
+		return share;
 	}
 
 	onTimelineUpdate (timecode) {
@@ -232,16 +280,6 @@ class Edit extends Component {
 		this.setState({
 			[field]:  event.target[event.target.hasOwnProperty('checked') ? 'checked' : 'value']
 		}, () => this.checkAndCreateVideos());
-	}
-
-	updatePlatform (platform, type, event) {
-		this.setState({
-			platforms: Object.assign({}, this.state.platforms, {
-				[platform]: Object.assign({}, this.state.platforms[platform], {
-					[type]: event.target.checked
-				})
-			})
-		})
 	}
 
 	openSubView (url) {
@@ -294,8 +332,8 @@ class Edit extends Component {
 		window.open(this.state.importObj.getPreviewPath(), '_blank');
 	}
 
-	downloadVideo (renderType) {
-		window.open(this.findVideoForType(renderType).getDownloadPath(), '_blank');
+	downloadVideo (videoType) {
+		window.open(this.findVideoForType(videoType).getDownloadPath(), '_blank');
 	}
 
 	/**
@@ -414,7 +452,7 @@ class Edit extends Component {
 									videoType={ videoType[0] }
 									description={ videoType[1] }
 									platforms={ this.state.platforms }
-									enabledPlatforms={ this.platforms }
+									enabledProviders={ this.providers }
 									enabled={ this.state[videoType[0]] }
 									updatePlatform={ this.updatePlatform.bind(this) }
 									openSubView={ this.openSubView.bind(this, videoType[0]) }

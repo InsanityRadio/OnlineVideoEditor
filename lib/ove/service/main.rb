@@ -91,6 +91,11 @@ module OVE
 				import.user_id = user.id
 				import.title = params['title']
 				import.save
+
+				send_json(
+					success: 1,
+					import: import.to_h
+				)
 			end
 
 			# Create a video [draft] based on an import
@@ -129,7 +134,7 @@ module OVE
 
 				video = Model::Video.find_by(id: video_id)
 
-				configuration = params['configuration']
+				configuration = params['configuration'].to_s
 
 				halt 405 if video.queued or video.rendered
 
@@ -163,7 +168,6 @@ module OVE
 
 				video = Model::Video.find_by(id: video_id)
 
-				configuration = params['configuration']
 				video.queued = true
 
 				if video.worker_id != nil
@@ -229,6 +233,185 @@ module OVE
 				send_file(video.output_path, :disposition => 'inline', :filename => File.basename(video.output_path))
 			end
 
+			get '/platform/' do
+				authorize!
+
+				platforms = Model::Platform.all
+
+				send_json(
+					success: 1,
+					platforms: platforms.map(&:to_h)
+				)
+			end
+
+			post '/platform/new' do
+				authorize!
+
+				raise 'Invalid platform name' if params['name'].length < 4
+
+				platform = Model::Platform.new(
+					name: params['name'],
+					platform_type: params['platform_type'],
+					default_share_text: params['default_share_text'],
+					configuration: params['configuration']
+				)
+
+				platform.validate_connection
+				platform.save
+
+				send_json(
+					success: 1,
+					platform: platform.to_h
+				)
+			end
+
+			get '/platform/:platform_id/' do |platform_id|
+				authorize!
+
+				platform = Model::Platform.find_by(id: platform_id)
+
+				send_json(
+					success: 1,
+					platform: platform.to_h
+				)
+			end
+
+			post '/platform/:platform_id/save' do |platform_id|
+				authorize!
+
+				platform = Model::Platform.find_by(id: platform_id)
+				halt 404 if platform == nil
+
+				platform.name = params['name'].to_s if params['name'] != nil
+				platform.default_share_text = params['default_share_text'].to_s if params['default_share_text'] != nil
+
+				if params['configuration'] != nil
+					platform.configuration = params['configuration'] 
+					platform.validate_connection
+				end
+				
+				platform.save
+
+				send_json(
+					success: 1,
+					platform: platform.to_h
+				)
+			end
+
+			post '/platform/:platform_id/delete' do |platform_id|
+				authorize!
+
+				platform = Model::Platform.find_by(id: platform_id)
+				platform.destroy
+
+				send_json(
+					success: 1
+				)
+			end
+
+			post '/import/:uuid/:video_id/share/new' do |uuid, video_id|
+				authorize!
+
+				platform_id = params['platform_id'].to_i
+
+				title = params['title'].to_s
+				description = params['description'].to_s
+				configuration = params['configuration'].to_s
+
+				platform = Model::Platform.find_by(id: platform_id)
+
+				halt 404 if platform == nil 
+
+				video = Model::Video.find_by(id: video_id)
+				share = Model::Share.create(
+					video_id: video.id,
+					platform_id: platform.id,
+					user_id: video.import.user_id,
+					title: title,
+					description: description,
+					configuration: configuration
+				)
+
+				halt 404 if video == nil 
+
+				send_json(
+					success: 1,
+					import: video.import.to_h,
+					share: share.to_h
+				)
+			end
+
+			get '/import/:uuid/:video_id/share/:share_id/' do |uuid, video_id, share_id|
+				authorize!
+
+				video = Model::Video.find_by(id: video_id)
+				share = Model::Share.find_by(id: share_id)
+
+				send_json(
+					success: 1,
+					import: video.import.to_h,
+					share: share.to_h
+				)
+			end
+
+			post '/import/:uuid/:video_id/share/:share_id/save' do |uuid, video_id, share_id|
+				authorize!
+
+				video = Model::Video.find_by(id: video_id)
+				share = Model::Share.find_by(id: share_id)
+
+				title = params['title'].to_s
+				description = params['description'].to_s
+				configuration = params['configuration'].to_s
+
+				halt 405 if share.shared
+
+				share.title = title if title != nil
+				share.description = description if description != nil
+				share.configuration = configuration if configuration != nil
+				share.save
+
+				send_json(
+					success: 1,
+					import: video.import.to_h,
+					share: share.to_h
+				)
+			end
+
+			post '/import/:uuid/:video_id/share/:share_id/delete' do |uuid, video_id, share_id|
+				authorize!
+
+				video = Model::Video.find_by(id: video_id)
+				share = Model::Share.find_by(id: share_id)
+
+				halt 405 if share.shared
+
+				share.destroy
+
+				send_json(
+					success: 1,
+					import: video.import.to_h,
+				)
+			end
+
+			post '/import/:uuid/:video_id/share/:share_id/now' do |uuid, video_id, share_id|
+				authorize!
+
+				video = Model::Video.find_by(id: video_id)
+				share = Model::Share.find_by(id: share_id)
+
+				halt 405 if share.queued or share.shared or !video.rendered
+
+				share.queued = true
+				share.save
+
+				worker_id = OVE::Worker::Share.create(share_id: share.id)
+
+				send_json(
+					success: 1,
+					worker_id: worker_id
+				)
+			end
 		end
 	end
 end

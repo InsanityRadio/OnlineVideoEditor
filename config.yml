@@ -10,6 +10,12 @@ ingest:
         video:
             root: /video
 
+share:
+    facebook:
+        app_access_token: secret
+        app_id: 312258302764699
+        app_secret: 122b3498ed280706cebfe7998356e4a7
+
 render:
     scratch: /video
     expiry: 2592000
