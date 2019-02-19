@@ -48,7 +48,7 @@ class VideoSelectorNew extends Component {
 
 		let airTower = AirTower.getInstance().core;
 		airTower.uploadSlate(this.state.name, this.state.file, parseFloat(this.state.cuePoint))
-			.then((slate) => this.handleSelect(slate))
+			.then((slate) => this.props.onClose(slate))
 	}
 
 	selectFile (file) {
