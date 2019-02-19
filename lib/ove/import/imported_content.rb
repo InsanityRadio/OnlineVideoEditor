@@ -55,7 +55,7 @@ module OVE
 
 			def thumbnail_path
 				target_chunk = @chunks[[@chunks.length - 1, 2].min]
-				@root_path + target_chunk.path
+				@root_path + target_chunk.path + '.jpg'
 			end
 
 		end
