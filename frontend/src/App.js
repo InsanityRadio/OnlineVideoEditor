@@ -95,13 +95,12 @@ class App extends Component {
 		}
 
 		return (
-			<div className="page-master">
-				<Header />
-				<div className="page-container">
-					<Navigation />
-					<div className="page-outlet">
-						<BrowserRouter>
-							<MuiThemeProvider theme={theme}>
+			<BrowserRouter>
+				<MuiThemeProvider theme={theme}>
+					<div className="page-master">
+						<div className="page-container">
+							<Navigation />
+							<div className="page-outlet">
 								<Route exact path="/" component={ HomeComponent } />
 								<Route exact path="/import" component={ ImportComponent } />
 								<Route exact path="/imports" component={ ImportsComponent } />
@@ -109,11 +108,11 @@ class App extends Component {
 								<Route exact path="/config" component={ ConfigComponent } />
 								<Route path="/config/platform/:id" component={ EditPlatformComponent } />
 								<Route exact path="/config/platform/new" component={ CreatePlatformComponent } />
-							</MuiThemeProvider>
-						</BrowserRouter>
+							</div>
+						</div>
 					</div>
-				</div>
-			</div>
+				</MuiThemeProvider>
+			</BrowserRouter>
 		);
 	}
 }

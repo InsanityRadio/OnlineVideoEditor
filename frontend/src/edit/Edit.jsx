@@ -454,9 +454,6 @@ class Edit extends Component {
 					<div className="video-selector">
 						<AppBar position="static">
 							<Toolbar>
-								<IconButton color="inherit" aria-label="Return" onClick={ this.handleClose.bind(this) }>
-									<FontAwesomeIcon icon="long-arrow-alt-left" />
-								</IconButton>
 								<div style={{ flex: 1 }}>
 									<TextField
 										fullWidth={ true }
