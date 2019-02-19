@@ -108,6 +108,21 @@ module OVE
 				import.generate_hls
 			end
 
+
+			get '/:service/import/:id/preview.jpg' do |service, id|
+				my_sources = OVE::Ingest::SourceProvider.instance.sources
+				source = my_sources.find { |s| s.service == service }
+
+				halt 404 unless service
+
+				importer = OVE::Import::Import.instance
+				import = importer.find_by_id source, id
+
+				halt 404 unless import
+
+				send_file(import.thumbnail_path, :disposition => 'inline', :filename => 'thumbnail.jpg')
+			end
+
 			get '/:service/import/:id/download.mp4' do |service, id|
 				my_sources = OVE::Ingest::SourceProvider.instance.sources
 				source = my_sources.find { |s| s.service == service }

@@ -52,6 +52,11 @@ module OVE
 				OVE::Transmux::TSMP4.ts_to_mp4(paths)
 			end
 
+			def thumbnail_path
+				target_chunk = @chunks[[@chunks.length - 1, 2].min]
+				@root_path + target_chunk.path
+			end
+
 		end
 	end
 end
