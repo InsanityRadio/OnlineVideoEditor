@@ -42,6 +42,7 @@ class Imports extends Component {
 		let airTower = AirTower.getInstance();
 		airTower.ingest.findImports(this.getServiceName())
 			.then((imports) => {
+				imports = imports.sort((a, b) => a.end_time < b.end_time);
 				this.setState({
 					imports: imports,
 					queue: this.state.queue - 1
@@ -85,6 +86,7 @@ class Imports extends Component {
 				// Add the new import object into the array! :-) 
 				let newCoreImports = this.state.coreImports.slice(0);
 				newCoreImports.push(coreImportObj);
+
 				this.setState({
 					coreImports: newCoreImports
 				});
@@ -116,7 +118,7 @@ class Imports extends Component {
 					<VideoThumbnailContainer>
 						{ this.state.imports.map((importObj) => (
 							<VideoThumbnail
-								thumbnail={ this.findCoreImport(importObj).thumbnail }
+								thumbnail={ importObj.getThumbnailPath() }
 								title={ this.findCoreImport(importObj).title }
 								onClick={ this.handleSelect.bind(this, importObj) } />
 						))}
