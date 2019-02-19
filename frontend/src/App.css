@@ -3,6 +3,37 @@
 	padding: 0;
 }
 
+body {
+	background: #333;
+}
+
+.page-master {
+	width: 100%;
+	min-height: 100vh;
+}
+
+.page-container {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	min-height: 100vh;
+}
+
+.navigation {
+	background: #000;
+	color: #FFF;
+	min-width: 50px;
+}
+
+.header {
+	background: #333;
+}
+
+.page-outlet {
+	position: relative;
+	flex: 1;
+}
+
 .fullpage {
 	position: absolute;
 	top: 0;
