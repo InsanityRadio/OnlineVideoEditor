@@ -68,7 +68,7 @@ body {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
+	justify-content: safe center;
 	height: 100%;
 	overflow-y: scroll;
 }
@@ -266,7 +266,7 @@ body {
 
 .video-thumbnail-container, .platform-container {
 	display: flex;
-	flex-wrap: 1;
+	flex-wrap: wrap;
 }
 
 .video-thumbnail-video, .platform {

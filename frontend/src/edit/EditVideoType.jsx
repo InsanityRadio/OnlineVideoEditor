@@ -238,7 +238,7 @@ class EditVideoType extends Component {
 					<Typography variant="h5" component="h2">
 						{ this.props.description }
 						&nbsp;&nbsp;
-						<Button onClick={ this.props.openSubView.bind(this) }>
+						<Button disabled={ !this.props.enabled } onClick={ this.props.openSubView.bind(this) }>
 							Edit
 						</Button>
 					</Typography>
@@ -252,6 +252,7 @@ class EditVideoType extends Component {
 							<FormControlLabel
 								control={
 									<Checkbox
+										disabled={ !this.props.enabled }
 										checked={ this.isPlatformEnabled(platform.id) }
 										onChange={ this.updatePlatform.bind(this, platform) } />
 								}
@@ -261,7 +262,9 @@ class EditVideoType extends Component {
 										&nbsp;&nbsp;
 										{ platform.name }
 										&nbsp;&nbsp;
-										<IconButton onClick={ this.configurePlatform.bind(this, platform) }>
+										<IconButton
+												disabled={ !this.props.enabled }
+												onClick={ this.configurePlatform.bind(this, platform) }>
 											<FontAwesomeIcon icon="pencil-alt" className="small-icon" />
 										</IconButton>
 									</div>
