@@ -13,7 +13,11 @@ module.exports = function (app) {
 	}
 
 	app.use(proxy('/api/ingest', {
-		target: 'http://10.32.2.30/',
+		target: 'http://video-ingest-revprox.insanityradio.com/',
+		changeOrigin: false,
+		headers: {
+			host: 'video-ingest-revprox.insanityradio.com'
+		},
 		pathRewrite: { '^/api/ingest': '' },
 		onProxyReq: proxyReq
 	}));

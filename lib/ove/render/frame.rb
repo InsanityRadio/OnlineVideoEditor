@@ -30,16 +30,16 @@ module OVE
 				length
 			end
 
-			def render_video_with_background
+			def render_video_without_background
 				render_video_with_command([
 					'./scripts/frame',
 					@source_path + ",#{start_time},#{length}",
-					@background_path,
+					@foreground_path,
 					@output_path
 				])
 			end
 
-			def render_video_without_background
+			def render_video_with_background
 				render_video_with_command([
 					'./scripts/frame',
 					@source_path + ",#{start_time},#{length}",
