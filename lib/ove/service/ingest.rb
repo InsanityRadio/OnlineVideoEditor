@@ -95,6 +95,40 @@ module OVE
 					File.unlink(out_path) if out_path != nil
 				end
 			end
+
+			get '/:service/cue_points' do
+				points = OVE::Storage::CuePoints.instance.points
+
+				points = points.map {|p| JSON.parse(p)}
+
+				send_json(
+					success: 1,
+					points: points
+				)
+			end
+
+			# Creates a "cue point" - a useful segment of video
+			post '/:service/cue_points' do |service|
+
+				my_sources = OVE::Ingest::SourceProvider.instance.sources
+				source = my_sources.find { |s| s.service == service }
+
+				halt 404 unless service
+
+				start_time, end_time = params['start_time'].to_i, params['end_time'].to_i
+
+				if (end_time - start_time) < 5
+					send_json(
+						success: 0,
+						error: "Cue points must be longer than 5 seconds in duration."
+					)
+					next
+				end
+
+				cue_point = OVE::Ingest::CuePoint.new start_time, end_time, service
+				cue_point.save
+
+			end
 		end
 	end
 end
