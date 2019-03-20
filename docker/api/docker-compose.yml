@@ -1,0 +1,70 @@
+version: '2'
+
+services:
+  mariadb:
+    image: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=toor
+      - MYSQL_DATABASE=ove
+      - MYSQL_USER=ove
+      - MYSQL_PASSWORD=ove
+
+  http:
+    build:
+      context: ../..
+      dockerfile: ./docker/api/Dockerfile.http
+    depends_on:
+      - redis
+      - mariadb
+    environment:
+      - http_proxy
+      - SERVICE=video
+      - REDIS=redis://redis:6379
+      - RACK_DB_NAME=ove
+      - RACK_DB_USER=ove
+      - RACK_DB_PASS=ove
+      - RACK_DB_HOST=mariadb
+      - RACK_ENV=production
+    volumes:
+      - video:/video
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: ./docker/api/Dockerfile.worker
+    depends_on:
+      - redis
+      - mariadb
+    environment:
+      - http_proxy
+      - SERVICE=video
+      - REDIS=redis://redis:6379
+      - RACK_DB_NAME=ove
+      - RACK_DB_USER=ove
+      - RACK_DB_PASS=ove
+      - RACK_DB_HOST=mariadb
+      - RACK_ENV=production
+    volumes:
+      - video:/video
+
+  redis:
+    image: redis
+    ports:
+      - '6379:6379'
+
+  nginx:
+    image: nginx
+    environment:
+      - INGEST_URL=http://10.32.2.30
+    depends_on:
+      - http
+    ports:
+      - '1964:80'
+    build:
+      context: .
+      dockerfile: ./Dockerfile.nginx
+    volumes:
+      - video:/video
+
+volumes:
+  video: 

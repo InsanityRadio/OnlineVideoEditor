@@ -1,0 +1,25 @@
+AllCops:
+  TargetRubyVersion: 2.3
+Metrics/LineLength:
+  Max: 100
+Layout/IndentHeredoc:
+  Enabled: false
+Layout/FirstParameterIndentation:
+  Enabled: false
+Layout/AlignHash:
+  Enabled: false
+Layout/IndentHash:
+  Enabled: false
+Layout/Tab:
+  Enabled: false
+Layout/IndentationWidth:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Layout/AccessModifierIndentation:
+  Enabled: false
+Style/MethodMissingSuper:
+  Enabled: false
+Style/MissingRespondToMissing:
+  Enabled: false
+

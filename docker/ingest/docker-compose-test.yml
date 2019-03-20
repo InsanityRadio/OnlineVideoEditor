@@ -1,0 +1,35 @@
+version: '2'
+
+services:
+  http:
+    build:
+      context: ../..
+      dockerfile: ./docker/ingest/Dockerfile.http
+    environment:
+      - http_proxy
+      - SERVICE=video
+      - REDIS=redis://redis:6379
+    ports:
+      - '1966:80'
+    volumes:
+      - ../../video:/video
+
+  nginx:
+    image: nginx
+    depends_on:
+      - http
+    ports:
+      - '1965:80'
+    volumes:
+      - ./nginx_dist.conf:/etc/nginx/nginx.conf
+      - ../../video:/video
+
+#  ffmpeg:
+#    image: jrottenberg/ffmpeg
+#    command: -re -stream_loop -1 -i /video.ts -c:v copy -c:a copy -bsf:a aac_adtstoasc -f flv rtmp://capture/video/video
+#    volumes:
+#      - ./dummy.ts:/video.ts
+
+  redis:
+    image: redis
+

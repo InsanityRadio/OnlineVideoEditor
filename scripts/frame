@@ -1,0 +1,52 @@
+#!/bin/bash
+set -e
+
+VIDEO=$1
+# Split the video into an array, and add default arguments to the end. We use these to calculate video times
+VIDEO="$VIDEO,0,0"
+VIDEO=(${VIDEO//,/ })
+
+if [ "$#" == 3 ]; then
+
+	FOREGROUND=$2
+	DESTINATION=$3
+
+elif [ "$#" == 4 ]; then
+
+	FOREGROUND=$2
+	BACKGROUND=$3
+	DESTINATION=$4
+
+else
+	echo "Usage: $0 video.ts,start,length foreground.png [background.png] destination.mp4"
+	echo "If background is not specified, the video will be centered and stretched"
+	exit 1
+fi
+
+if [[ "${VIDEO[2]}" == "0" ]]; then
+	VIDEO_LENGTH_S=`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${VIDEO[0]}"`
+else
+	VIDEO_LENGTH_S=${VIDEO[2]}
+fi
+
+# target: 1080x1080
+# => resize video to 1080:-2
+
+# NO BG
+
+if [ ! -z "$BACKGROUND" ]; then
+	ffmpeg -y -i "${VIDEO[0]}" -i "$BACKGROUND" -i "$FOREGROUND" -filter_complex \
+	"[0:v]scale=1024:-2,trim=start=${VIDEO[1]}:duration=${VIDEO_LENGTH_S},setsar=1,setpts=PTS-STARTPTS[0v];
+	 [1:v][0v]overlay=0:(main_h-overlay_h)/2[base];
+	 [base][2:v]overlay[v];
+	 [0:a]atrim=start=${VIDEO[1]}:duration=${VIDEO_LENGTH_S},asetpts=PTS-STARTPTS[0a]
+	 " \
+	-map "[v]" -map "[0a]" -c:v h264 -movflags faststart -b:v 6000k -c:a aac -b:a 256k -strict -2 "$DESTINATION"
+else
+	ffmpeg -y -i "${VIDEO[0]}" -i "$FOREGROUND" -filter_complex \
+	"[0:v]scale=-2:1024,trim=start=${VIDEO[1]}:duration=${VIDEO_LENGTH_S},crop=w=1024:h=1024:x=(in_w-in_h)/2,setsar=1,setpts=PTS-STARTPTS[0v];
+	 [0v][1:v]overlay[v];
+	 [0:a]atrim=start=${VIDEO[1]}:duration=${VIDEO_LENGTH_S},asetpts=PTS-STARTPTS[0a]
+	 " \
+	-map "[v]" -map "[0a]" -c:v h264 -movflags faststart -b:v 6000k -c:a aac -b:a 256k -strict -2 "$DESTINATION"
+fi

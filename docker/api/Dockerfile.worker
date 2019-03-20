@@ -1,0 +1,17 @@
+FROM ruby:2.3-stretch
+MAINTAINER Jamie Woods <computing@insanityradio.com>
+
+RUN apt-get update && apt-get install -y \
+  build-essential libmariadbclient-dev ffmpeg bc
+
+RUN mkdir /app
+WORKDIR /app
+
+COPY Gemfile Gemfile.lock ./
+RUN env
+RUN gem install --http-proxy http://10.32.1.1:3128 bundler && bundle install --jobs 20 --retry 5
+
+COPY . ./
+
+CMD ["bash", "-c", "QUEUE=* rake resque:work"]
+
