@@ -6,6 +6,7 @@ import AbsoluteTimePicker from '../components/AbsoluteTimePicker';
 import CuePointSelector from './CuePointSelector';
 import Video from '../components/Video';
 import VideoControls from '../components/VideoControls';
+import TimeSelector from './TimeSelector';
 import TimelineComponent from '../components/Timeline';
 
 import { withStyles } from '@material-ui/core/styles';
@@ -194,11 +195,26 @@ class Import extends Component {
 		})
 	}
 
+	selectTime (type) {
+		this.setState({
+			dialog: 'time',
+			dialogArg: 'time'
+		})
+	}
+
 	closeSlateView (saveData) {
 		if (saveData != undefined && this.state.dialog == 'cue_point') {
 			this.setState({
 				segmentStart: saveData.start_time,
 				segmentEnd: saveData.end_time
+			}, () => {
+				this.video.seekStart();
+			})
+		}
+		if (saveData != undefined && this.state.dialog == 'time') {
+			this.setState({
+				segmentStart: saveData / 1000 | 0,
+				segmentEnd: (saveData / 1000 | 0) + 30
 			}, () => {
 				this.video.seekStart();
 			})
@@ -271,7 +287,11 @@ class Import extends Component {
 							<h3>1. Find Content</h3>
 
 							<div class="row">
-								<Button variant="contained" color="secondary" fullWidth={ true }>
+								<Button 
+										variant="contained"
+										color="secondary"
+										fullWidth={ true }
+										onClick={ this.selectTime.bind(this) }>
 									<FontAwesomeIcon icon="stopwatch" />&nbsp;Search By Time
 								</Button>
 
@@ -338,6 +358,10 @@ class Import extends Component {
 
 				{ this.state.dialog == 'cue_point' && (
 					<CuePointSelector onClose={ this.closeSlateView.bind(this) } /> 
+				)}
+
+				{ this.state.dialog == 'time' && (
+					<TimeSelector initial={ this.state.currentTime * 1000 } onClose={ this.closeSlateView.bind(this) } /> 
 				)}
 			</div>
 
