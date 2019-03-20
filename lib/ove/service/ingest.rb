@@ -57,7 +57,7 @@ module OVE
 			end
 
 			get '/:service/thumbnail.jpg' do |service|
-				time = params['time'].to_i
+				time = params['time'].to_i * 1000
 
 				my_sources = OVE::Ingest::SourceProvider.instance.sources
 				source = my_sources.find { |s| s.service == service }
@@ -69,8 +69,8 @@ module OVE
 			end
 
 			get '/:service/download.mp4' do |service|
-				start_time = params['start_time'].to_i
-				end_time = params['end_time'].to_i
+				start_time = params['start_time'].to_i * 1000
+				end_time = params['end_time'].to_i * 1000
 
 				my_sources = OVE::Ingest::SourceProvider.instance.sources
 				source = my_sources.find { |s| s.service == service }
