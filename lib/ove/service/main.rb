@@ -153,7 +153,7 @@ module OVE
 				video = Model::Video.find_by(id: video_id)
 				import = video.import
 
-				halt 405 if video.queued or video.rendered
+				halt 405 if video.queued
 
 				video.destroy
 

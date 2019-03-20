@@ -102,7 +102,15 @@ class EditVideoType extends Component {
 	}
 
 	reset () {
+		if (!window.confirm('Really delete this rendered video?')) {
+			return;
+		}
 
+		this.props.updateState({
+			target: {
+				value: false
+			}
+		});
 	}
 
 	renderPostOptions () {
@@ -118,7 +126,7 @@ class EditVideoType extends Component {
 						<IconButton onClick={ this.props.downloadVideo.bind(this, videoType) }>
 							<FontAwesomeIcon icon="download" className="small-icon" />
 						</IconButton>
-						<IconButton onClick={ this.reset() }>
+						<IconButton onClick={ this.reset.bind(this) }>
 							<FontAwesomeIcon icon="trash" className="small-icon" />
 						</IconButton>
 					</div>
