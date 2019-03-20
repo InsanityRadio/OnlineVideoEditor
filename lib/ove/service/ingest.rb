@@ -65,7 +65,7 @@ module OVE
 				halt 404 unless service
 
 				chunk = source.find_chunks(time, time)[0]
-				send_file(source.root + chunk.path + '.jpg', :disposition => 'inline', :filename => 'thumbnail.jpg')
+				send_file(source.root + '/' + chunk.path + '.jpg', :disposition => 'inline', :filename => 'thumbnail.jpg')
 			end
 
 			get '/:service/download.mp4' do |service|
@@ -81,7 +81,7 @@ module OVE
 
 				begin
 
-					paths = source.find_chunks(start_time, end_time).map { |chunk| source.root + chunk.path }
+					paths = source.find_chunks(start_time, end_time).map { |chunk| source.root + '/' + chunk.path }
 					out_path, stderr, wait_thr = OVE::Transmux::TSMP4.ts_to_mp4(paths)
 
 					halt 500 unless wait_thr.value.success?
