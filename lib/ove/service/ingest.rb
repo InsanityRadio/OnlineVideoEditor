@@ -56,7 +56,19 @@ module OVE
 				source.generate_hls start_time * 1000.0, end_time * 1000.0
 			end
 
-			get '/:service/download.mp4' do |service, id|
+			get '/:service/thumbnail.jpg' do |service|
+				time = params['time'].to_i
+
+				my_sources = OVE::Ingest::SourceProvider.instance.sources
+				source = my_sources.find { |s| s.service == service }
+
+				halt 404 unless service
+
+				chunk = source.find_chunks(time, time)[0]
+				send_file(source.root + chunk.path + '.jpg', :disposition => 'inline', :filename => 'thumbnail.jpg')
+			end
+
+			get '/:service/download.mp4' do |service|
 				start_time = params['start_time'].to_i
 				end_time = params['end_time'].to_i
 
@@ -69,7 +81,8 @@ module OVE
 
 				begin
 
-					out_path, stderr, wait_thr = import.generate_mp4 start_time * 1000.0, end_time * 1000.0
+					paths = source.find_chunks(start_time, end_time).map { |chunk| source.root + chunk.path }
+					out_path, stderr, wait_thr = OVE::Transmux::TSMP4.ts_to_mp4(paths)
 
 					halt 500 unless wait_thr.value.success?
 
@@ -99,11 +112,9 @@ module OVE
 			get '/:service/cue_points' do
 				points = OVE::Storage::CuePoints.instance.points
 
-				points = points.map {|p| JSON.parse(p)}
-
 				send_json(
 					success: 1,
-					points: points
+					points: points.map &:to_h
 				)
 			end
 
