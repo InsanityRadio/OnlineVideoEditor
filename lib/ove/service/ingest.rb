@@ -114,7 +114,7 @@ module OVE
 
 				send_json(
 					success: 1,
-					points: points.map &:to_h
+					points: points.map(&:to_h)
 				)
 			end
 
