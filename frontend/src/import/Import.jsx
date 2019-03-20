@@ -3,9 +3,10 @@ import React, { Component } from 'react';
 import AirTower from '../network/AirTower';
 
 import AbsoluteTimePicker from '../components/AbsoluteTimePicker';
-import TimelineComponent from '../components/Timeline';
+import CuePointSelector from './CuePointSelector';
 import Video from '../components/Video';
 import VideoControls from '../components/VideoControls';
+import TimelineComponent from '../components/Timeline';
 
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -32,6 +33,7 @@ class Import extends Component {
 			playing: false
 		},
 
+		dialog: null,
 		segmentStart: -1,
 		segmentEnd: -1
 	}
@@ -185,6 +187,27 @@ class Import extends Component {
 		this.props.history.push('/');
 	}
 
+	selectCuePoint (type) {
+		this.setState({
+			dialog: 'cue_point',
+			dialogArg: 'cue_point'
+		})
+	}
+
+	closeSlateView (saveData) {
+		if (saveData != undefined && this.state.dialog == 'cue_point') {
+			this.setState({
+				segmentStart: saveData.start_time,
+				segmentEnd: saveData.end_time
+			}, () => {
+				this.video.seekStart();
+			})
+		}
+		this.setState({
+			dialog: null
+		})
+	}
+
 	render () {
 		return (
 
@@ -252,7 +275,11 @@ class Import extends Component {
 									<FontAwesomeIcon icon="stopwatch" />&nbsp;Search By Time
 								</Button>
 
-								<Button variant="contained" color="secondary" fullWidth={ true }>
+								<Button
+										variant="contained"
+										color="secondary"
+										fullWidth={ true }
+										onClick={ this.selectCuePoint.bind(this) }>
 									<FontAwesomeIcon icon="file-video" />&nbsp;Search By Clip
 								</Button>
 							</div>
@@ -308,6 +335,10 @@ class Import extends Component {
 						</div>
 					</div>
 				</div>
+
+				{ this.state.dialog == 'cue_point' && (
+					<CuePointSelector onClose={ this.closeSlateView.bind(this) } /> 
+				)}
 			</div>
 
 		);

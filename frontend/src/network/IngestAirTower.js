@@ -1,5 +1,6 @@
 import IAirTower from './IAirTower';
 
+import CuePoint from './models/CuePoint';
 import Import from './models/Import';
 
 export default class IngestAirTower extends IAirTower {
@@ -78,6 +79,17 @@ export default class IngestAirTower extends IAirTower {
 				}
 
 				return new Import(response['import'], service);
+			})
+	}
+
+	loadCuePoints (service) {
+		return this.fetch('/' + service + '/cue_points')
+			.then((response) => {
+				if (response.success != 1) {
+					throw new Error('Failed to load list of cue points from the server!');
+				}
+
+				return response.points.map((point) => new CuePoint(point));
 			})
 	}
 
