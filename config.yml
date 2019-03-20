@@ -5,10 +5,7 @@ global:
 ingest:
     # This allows us to offload rendering onto another machine, provided this machine can access
     #  this IP address. We use the above secret key to ensure security. 
-    public_uri: http://10.32.2.30
-    sources:
-        video:
-            root: /video
+    public_uri: http://video-ingest-revprox.insanityradio.com
 
 share:
     facebook:
@@ -20,5 +17,3 @@ render:
     scratch: /video
     expiry: 2592000
 
-main:
-    public_uri: http://10.32.2.31

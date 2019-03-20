@@ -27,7 +27,13 @@ module OVE
 				write_attribute :output_path, new_path
 				write_attribute :output_expiry, Time.now.to_i + $config['render']['expiry']
 				write_attribute :rendered, true
-				
+			end
+
+			before_destroy :delete_files
+
+			def delete_files
+				File.unlink(output_path) rescue nil
+				write_attribute :output_path, ''
 			end
 		end
 	end

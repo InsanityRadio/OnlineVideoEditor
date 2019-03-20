@@ -56,8 +56,6 @@ module OVE
 			def upload! video_path, title, description
 				puts 'uploading video'
 
-				p @fb.get_object('me')
-
 				page_id = @configuration['page_id']
 				@fb.put_video video_path, { :title => title, :description => description }, page_id
 				puts 'uploaded video'

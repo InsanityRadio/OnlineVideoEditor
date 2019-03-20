@@ -283,7 +283,7 @@ class Edit extends Component {
 	updateLocalField (field, event, callback) {
 		this.setState({
 			[field]:  event.target[event.target.hasOwnProperty('checked') ? 'checked' : 'value']
-		}, () => callback() || this.checkAndCreateVideos());
+		}, () => (typeof callback == 'function' && callback()) || this.checkAndCreateVideos());
 	}
 
 	updateLocalFieldAndSave (field, event) {

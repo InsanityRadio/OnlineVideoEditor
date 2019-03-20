@@ -19,7 +19,7 @@ export default class EditPlatform extends Component {
 
 	updatePlatform (type, name, configuration) {
 		let airTower = AirTower.getInstance();
-		airTower.core.updatePlatform(this.props.platform.id, name, configuration)
+		airTower.core.updatePlatform(this.props.platform.id, name, JSON.stringify(configuration))
 			.then((platform) => this.props.change())
 	}
 

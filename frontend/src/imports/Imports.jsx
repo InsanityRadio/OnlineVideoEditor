@@ -122,34 +122,8 @@ class Imports extends Component {
 								title={ this.findCoreImport(importObj).title }
 								onClick={ this.handleSelect.bind(this, importObj) } />
 						))}
-
-						<div className="video-thumbnail-video">
-							<Button variant="outlined" onClick={ this.openNew.bind(this) }>
-								<FontAwesomeIcon icon="plus" />
-							</Button>
-						</div>
 					</VideoThumbnailContainer>
 
-				</div>
-
-				<div className="video-side">
-					<div className="video-selector">
-						<AppBar position="static">
-							<Toolbar>
-								<IconButton color="inherit" aria-label="Return" onClick={ this.handleClose.bind(this) }>
-									<FontAwesomeIcon icon="long-arrow-alt-left" />
-								</IconButton>
-								<div style={{ flex: 1 }}>
-									<Typography variant="h5" component="h2">
-										Saved Videos
-									</Typography>
-								</div>
-							</Toolbar>
-						</AppBar>
-
-						<div className="side-content">
-						</div>
-					</div>
 				</div>
 
 			</div>

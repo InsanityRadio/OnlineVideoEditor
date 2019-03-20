@@ -45,7 +45,7 @@ export default class IngestAirTower extends IAirTower {
 					throw new Error('Import failed');
 				}
 
-				return new Import(response['import'], service);
+				return new Import(response['data'], service);
 			});
 	}
 
