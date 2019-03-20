@@ -136,7 +136,7 @@ module OVE
 					next
 				end
 
-				cue_point = OVE::Ingest::CuePoint.new start_time, end_time, service
+				cue_point = OVE::Ingest::CuePoint.new service, start_time, end_time
 				cue_point.save
 
 			end
