@@ -1,32 +1,43 @@
 # Online Video Editor v0.1
 
+Online Video Editor is a platform for creating video clips for social media, from a broadcast stream.
 
-## Prototypes
+## Technical Description
 
-### Ingest/Import
-The ingest/import engine runs wholly inside Docker. It should be built through `docker-compose`.
+OVE exists as a series of Docker containers. There are three different components - you can install these on one system, or split these components across systems: the ingest engine, the API, and the worker. 
 
-1. Install Docker and `docker-compose`.
-	- The Docker documentation provides a great README explaining how to install Docker on a variety of systems https://docs.docker.com/install/linux/docker-ce/ubuntu/#set-up-the-repository
-	- `docker-compose` can be installed by pulling its script to somewhere in your path. For instance: ```sudo curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose; sudo chmod +x /usr/local/bin/docker-compose```
-2. Clone this repository or download a tarball.
-3. Edit `docker/ingest/docker-compose.yml` and change `PULL_URL` to point to some RTMP video server. Behind the campus-firewall, one can use the server available at `rtmp://134.219.88.222:1935/falcon/video`. Otherwise, comment out the line and uncomment the lines at the bottom of the file under the `ffmpeg` branch. 
-4. Enter the `docker` directory and run `./build.sh`. This will build and launch all the given containers. Be careful, as Docker will automatically restart these containers on launch. 
-5. You are now able to access the ingest/import system on the port 1965. 
+### Ingest Engine
 
+Configure the ingest engine (`docker/ingest/docker-compose.yml`) to pull your station's RTMP feed. The engine will store the previous 12 hours of broadcast content for creating social media clips. 
 
-To remove, run `./remove.sh`. Alternatively, run `scrub.sh` to obliterate the containers entirely, including their persistent volumes.  
+### Worker Engine
 
-### frontend
-The frontend can be run from the `frontend/` directory within the project tarball. To build this, you need a working and modern install of Node.js.
+The worker engine handles video rendering and egress network access (e.g. uploading to social platforms), and when active will use a large percentage of CPU. You can limit this through Docker configuration, or by running the worker engine on a different server. 
 
-1. Install Node.js (10+ minimum, 11 recommended) through the instructions provided by the vendor (for instance, https://nodejs.org/en/download/package-manager/). 
-2. Enter the `frontend/` directory and install our build dependencies. These are done by running `npm install`.
-3. You can launch and run the development web server by running `npm start`. On some machines, this will automatically spawn a web browser. 
+### Main API
 
-### ffmpeg render scripts
-These scripts can be run on any environment with a sane ffmpeg install. By sane, we mean with a reasonable collection of 'non-free' codec packages (at minimum, x264, mpeg2 and AAC). 
+The main API component runs the application itself, and handles all HTTP routing between the other components. 
 
-#### ./topandtail.sh
-This script provides a way to add an intro and extro (think title card and credits) to a video. The videos have their duration calculated, and then some basic maths determines when the video crossover should occur. This allows the main/sandwiched video to be cued before the first audio clip finishes, meaning for a smoother "cross-fade" type transition. 
+## Installation
 
+#### 1. Install a recent version of Docker CE on the host server
+
+#### 2. Clone the Online Video Editor repository.
+
+#### 3. This step can be skipped if using a pre-existing ingest/import component, such as the one provided for convenience below. 
+
+Open `docker/docker-compose.yml`.
+
+Edit PULL_URL to point to the address of a RTMP server we will use for testing. To test without a RTMP server, comment this line and uncomment “ffmpeg” block. 
+
+To change port number, find `1965:80` line under nginx, and change `1965` to target port number for the ingest service to bind to. To bind to a specific network interface, we can specify a triple such as `10.32.2.30:1965:80`. Please note that, even though you can bind to a localhost interface, it will not be accessible to the Docker container we are creating below, due to Docker networking limitations.
+
+#### 4. Open `api/docker-compose.yml`. Edit INGEST_URI to point to the network address of the web server (in our above example, `http://my-real-host-ip:1965`)   
+
+As above, one can specify a port number by finding the line `1964:80` under nginx. 
+
+#### 5. Open `config.yml` and fill in appropriate values. The secret key can be any string of alphanumeric characters of at least 64 characters length. Also, change `public_uri` under the ingest heading to the value we specified above (as `INGEST_URI`). 
+
+#### 6. `cd docker`, run `./build.sh`. If you're only building one component, change directory to its individual directory and build the `docker-compose.yml` file.
+
+#### 7. The system will now be running and accessible at `http://localhost:1964`.
