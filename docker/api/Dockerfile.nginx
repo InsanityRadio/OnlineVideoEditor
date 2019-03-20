@@ -1,7 +1,10 @@
-FROM nginx
+FROM nginx:mainline
 
-COPY nginx.conf /etc/nginx/nginx.conf.e
-COPY start.sh /start.sh
+COPY docker/api/nginx.conf /etc/nginx/nginx.conf.e
+COPY docker/api/start.sh /start.sh
+
+RUN mkdir -p /www
+COPY frontend/build/ /www/
 
 RUN chmod +x /start.sh
 
