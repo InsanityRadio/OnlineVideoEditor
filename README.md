@@ -1,4 +1,4 @@
-# Online Video Editor v0.1
+# Online Video Editor v1.0
 
 Online Video Editor is a platform for creating video clips for social media, from a broadcast stream.
 
