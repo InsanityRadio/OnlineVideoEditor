@@ -3,9 +3,11 @@ import React, { Component } from 'react';
 import AirTower from '../network/AirTower';
 
 import AbsoluteTimePicker from '../components/AbsoluteTimePicker';
-import TimelineComponent from '../components/Timeline';
+import CuePointSelector from './CuePointSelector';
 import Video from '../components/Video';
 import VideoControls from '../components/VideoControls';
+import TimeSelector from './TimeSelector';
+import TimelineComponent from '../components/Timeline';
 
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -32,6 +34,7 @@ class Import extends Component {
 			playing: false
 		},
 
+		dialog: null,
 		segmentStart: -1,
 		segmentEnd: -1
 	}
@@ -185,6 +188,42 @@ class Import extends Component {
 		this.props.history.push('/');
 	}
 
+	selectCuePoint (type) {
+		this.setState({
+			dialog: 'cue_point',
+			dialogArg: 'cue_point'
+		})
+	}
+
+	selectTime (type) {
+		this.setState({
+			dialog: 'time',
+			dialogArg: 'time'
+		})
+	}
+
+	closeSlateView (saveData) {
+		if (saveData != undefined && this.state.dialog == 'cue_point') {
+			this.setState({
+				segmentStart: saveData.start_time,
+				segmentEnd: saveData.end_time
+			}, () => {
+				this.video.seekStart();
+			})
+		}
+		if (saveData != undefined && this.state.dialog == 'time') {
+			this.setState({
+				segmentStart: saveData / 1000 | 0,
+				segmentEnd: (saveData / 1000 | 0) + 30
+			}, () => {
+				this.video.seekStart();
+			})
+		}
+		this.setState({
+			dialog: null
+		})
+	}
+
 	render () {
 		return (
 
@@ -248,11 +287,19 @@ class Import extends Component {
 							<h3>1. Find Content</h3>
 
 							<div class="row">
-								<Button variant="contained" color="secondary" fullWidth={ true }>
+								<Button 
+										variant="contained"
+										color="secondary"
+										fullWidth={ true }
+										onClick={ this.selectTime.bind(this) }>
 									<FontAwesomeIcon icon="stopwatch" />&nbsp;Search By Time
 								</Button>
 
-								<Button variant="contained" color="secondary" fullWidth={ true }>
+								<Button
+										variant="contained"
+										color="secondary"
+										fullWidth={ true }
+										onClick={ this.selectCuePoint.bind(this) }>
 									<FontAwesomeIcon icon="file-video" />&nbsp;Search By Clip
 								</Button>
 							</div>
@@ -308,6 +355,14 @@ class Import extends Component {
 						</div>
 					</div>
 				</div>
+
+				{ this.state.dialog == 'cue_point' && (
+					<CuePointSelector onClose={ this.closeSlateView.bind(this) } /> 
+				)}
+
+				{ this.state.dialog == 'time' && (
+					<TimeSelector initial={ this.state.currentTime * 1000 } onClose={ this.closeSlateView.bind(this) } /> 
+				)}
 			</div>
 
 		);
