@@ -139,6 +139,8 @@ module OVE
 				cue_point = OVE::Ingest::CuePoint.new service, start_time, end_time
 				cue_point.save
 
+				OVE::Storage::CuePoints.instance.clean_points
+
 			end
 		end
 	end
