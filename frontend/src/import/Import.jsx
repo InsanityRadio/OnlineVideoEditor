@@ -27,6 +27,10 @@ const styles = theme => ({
 
 class Import extends Component {
 
+	// in s, define the delay of the video codec
+	// allows times to align up properly!
+	clipDelay = 1.7;
+
 	state = {
 		currentTime: 0,
 		ready: false,
@@ -182,8 +186,8 @@ class Import extends Component {
 		window.open('/api/ingest/'
 			+ this.getServiceName()
 			+ '/download.mp4?start_time='
-			+ this.state.segmentStart
-			+ '&end_time=' + this.state.segmentEnd,
+			+ (this.state.segmentStart + this.clipDelay)
+			+ '&end_time=' + (this.state.segmentEnd + this.clipDelay),
 			'_blank')
 	}
 
@@ -267,6 +271,7 @@ class Import extends Component {
 							onChange={ this.onTimelineUpdate.bind(this) }
 							segmentStart = { this.state.segmentStart }
 							segmentEnd = { this.state.segmentEnd }
+							clipDelay={ this.clipDelay }
 							ref = { this.setTimeline.bind(this) }
 
 							autoUpdateViewport={ true || this.state.video.playing }
@@ -326,12 +331,14 @@ class Import extends Component {
 								label="Start"
 								video={ this.video }
 								onChange={ this.setSegmentStart.bind(this) }
+								clipDelay = { this.clipDelay }
 								value={ this.state.segmentStart } />
 
 							<AbsoluteTimePicker
 								label="End"
 								video={ this.video }
 								onChange={ this.setSegmentEnd.bind(this) }
+								clipDelay = { this.clipDelay }
 								value={ this.state.segmentEnd } />
 
 							<br /><br />
