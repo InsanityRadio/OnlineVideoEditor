@@ -387,7 +387,12 @@ class Edit extends Component {
 	}
 
 	deleteClip () {
+		if (!confirm('Really delete video clip?')) {
+			return;
+		}
 
+		let airTower = AirTower.getInstance();
+		airTower
 	}
 	
 	render () {
@@ -467,7 +472,6 @@ class Edit extends Component {
 										margin="normal" />
 								</div>
 								<IconButton
-									size='small'
 									onClick={ this.deleteClip.bind(this) }>
 									<FontAwesomeIcon icon="trash" size="sm" />
 								</IconButton>
