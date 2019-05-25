@@ -34,7 +34,9 @@ class Video extends Component {
 
 		if (this.props.hls) {
 			// We can't use web workers with WebPack/create-react-app.
-			this.hls = new Hls({ enableWorker: false });
+			// Setting a large maxBufferHole makes HLS.JS buffer video instead of skipping over anything missing
+			// it is VERY annoying on slow connections!
+			this.hls = new Hls({ enableWorker: false, maxBufferHole: 10 });
 			this.registerEvents();
 		}
 
@@ -63,28 +65,34 @@ class Video extends Component {
 
 		this.hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
 			let rawDateTime = data.details.fragments[0].programDateTime;
-
-			// As old fragments are discarded (think sliding window), this allows us to work out
-			// the exact timecode where video.currentTime = 0
 			let syncOffset = data.details.fragments[0].start * 1000;
 
-			this.state.discontinuity || this.setState({
-				timecodeBase: rawDateTime - syncOffset
-			});
+			//console.log('setting sync offset', rawDateTime - syncOffset, rawDateTime, syncOffset);
+
+			//this.state.discontinuity || this.setState({
+				//timecodeBase: rawDateTime - syncOffset
+			//});
 		});
 
 		this.hls.on(Hls.Events.FRAG_CHANGED, (event, data) => {
 			this.currentFrag = data.frag;
 
-			let fragmentTime = data.frag.programDateTime;
+			// 1. find the LATEST fragment
+			// 2. work out the currentTime of the start of that fragment
+			// 3. discontinuity = that currentTime - expected currentTime
 
-			let expectedFragmentTime = this.state.timecodeBase + this.video.currentTime * 1000;
+			//let fragmentTime = data.frag.programDateTime;
+			//let expectedFragmentTime = this.state.timecodeBase + this.video.currentTime * 1000;
 
-			let error = data.frag.duration * 1100;
+			console.log('CHANGE IN FRAG', data); //, data.frag);
 
-			if (Math.abs(expectedFragmentTime - fragmentTime) > error) {
+			let discont = data.frag.programDateTime - data.frag.start * 1000;
+			console.log('discont?', discont)
+
+			if (true) {
+				console.log('found discontinuity', discont);
 				this.setState({
-					timecodeBase: fragmentTime - this.video.currentTime * 1000,
+					timecodeBase: discont,
 					discontinuity: true
 				})
 			}

@@ -37,6 +37,11 @@ module OVE
 				from engine.retrieve(uuid)
 			end
 
+			def delete source, import
+				engine = storage_engine source
+				engine.delete import
+			end
+
 			def find_by_source source
 				from_list storage_engine(source).all
 			end

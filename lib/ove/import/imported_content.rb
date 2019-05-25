@@ -58,6 +58,10 @@ module OVE
 				@root_path + target_chunk.path + '.jpg'
 			end
 
+			def delete
+				raise 'To delete an import, call OVE::Storage::Import.instance.delete [import]'
+			end
+
 		end
 	end
 end

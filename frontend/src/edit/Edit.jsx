@@ -37,6 +37,8 @@ const styles = theme => ({
 
 class Edit extends Component {
 
+	clipDelay = 1.7;
+
 	state = {
 		importObj: null,
 		currentTime: 0,
@@ -385,6 +387,23 @@ class Edit extends Component {
 	handleClose () {
 		this.props.history.push('/imports');
 	}
+
+	deleteClip () {
+		if (!window.confirm('Really delete video clip?')) {
+			return;
+		}
+
+		let airTower = AirTower.getInstance();
+		airTower.core.deleteImport(this.getServiceName(), this.getImportID())
+			.then((response) => {
+				console.log('Deletion core?', response);
+			})
+
+		airTower.ingest.deleteImportByID(this.getServiceName(), this.getImportID())
+			.then((response) => {
+				console.log('Deletion ingest?', response);
+			})
+	}
 	
 	render () {
 
@@ -442,6 +461,7 @@ class Edit extends Component {
 							onChange={ this.onTimelineUpdate.bind(this) }
 							segmentStart = { this.state.importObj.start_time }
 							segmentEnd = { this.state.importObj.end_time }
+							clipDelay = { this.clipDelay }
 							autoUpdateViewport={ true }
 							readOnly={ true }
 							initialOffset={ 0 } />
@@ -462,6 +482,11 @@ class Edit extends Component {
 										onChange={ this.updateLocalFieldAndSave.bind(this, 'videoTitle') }
 										margin="normal" />
 								</div>
+								<IconButton
+									onClick={ this.deleteClip.bind(this) }>
+									<FontAwesomeIcon icon="trash" size="sm" />
+								</IconButton>
+
 							</Toolbar>
 						</AppBar>
 

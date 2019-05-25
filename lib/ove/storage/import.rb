@@ -25,6 +25,10 @@ module OVE
 				uuid
 			end
 
+			def delete import
+				storage_engine.delete_category import.uuid
+			end
+
 			# Returns a list of chunks stored under the provided unique ID on the disk
 			def retrieve uuid
 				files = storage_engine.find_files(uuid)

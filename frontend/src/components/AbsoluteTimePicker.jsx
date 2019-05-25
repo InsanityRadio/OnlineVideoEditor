@@ -89,7 +89,7 @@ class AbsoluteTimePicker extends Component {
 						}
 					}}
 					label={ this.props.label }
-					value={ this.timecode(this.props.value)[0] }
+					value={ this.timecode(this.props.value - this.props.clipDelay)[0] }
 					onChange={ (a) => '' } />
 
 				<div class="absolute-time-button-array">
