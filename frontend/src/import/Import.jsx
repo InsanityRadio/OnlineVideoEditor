@@ -378,7 +378,7 @@ class Import extends Component {
 				</div>
 
 				{ this.state.dialog == 'cue_point' && (
-					<CuePointSelector onClose={ this.closeSlateView.bind(this) } /> 
+					<CuePointSelector onClose={ this.closeSlateView.bind(this) } clipDelay={ this.clipDelay } /> 
 				)}
 
 				{ this.state.dialog == 'time' && (

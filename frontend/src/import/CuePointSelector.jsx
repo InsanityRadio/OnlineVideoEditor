@@ -36,10 +36,10 @@ class CuePointSelector extends Component {
 
 	setPoints (points) {
 		points = points.reverse();
-		/* for (var i = 0; i < points.length; i++) {
-			points[i].set('start_time', points[i].start_time + this.clipDelay);
-			points[i].set('end_time', points[i].end_time + this.clipDelay);
-		} */
+		for (var i = 0; i < points.length; i++) {
+			points[i].set('start_time', points[i].start_time + this.props.clipDelay);
+			points[i].set('end_time', points[i].end_time + this.props.clipDelay);
+		}
 		this.setState({
 			points: points
 		})
