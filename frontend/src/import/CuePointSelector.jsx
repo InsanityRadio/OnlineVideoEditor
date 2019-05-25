@@ -30,7 +30,7 @@ class CuePointSelector extends Component {
 
 	loadCuePoints () {
 		let airTower = AirTower.getInstance().ingest;
-		airTower.loadCuePoints().then((points) => this.setState({ points }));
+		airTower.loadCuePoints().then((points) => this.setState({ points: points.reverse() }));
 	}
 
 	handleClose () {

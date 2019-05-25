@@ -385,6 +385,10 @@ class Edit extends Component {
 	handleClose () {
 		this.props.history.push('/imports');
 	}
+
+	deleteClip () {
+
+	}
 	
 	render () {
 
@@ -462,6 +466,12 @@ class Edit extends Component {
 										onChange={ this.updateLocalFieldAndSave.bind(this, 'videoTitle') }
 										margin="normal" />
 								</div>
+								<IconButton
+									size='small'
+									onClick={ this.deleteClip.bind(this) }>
+									<FontAwesomeIcon icon="trash" size="sm" />
+								</IconButton>
+
 							</Toolbar>
 						</AppBar>
 

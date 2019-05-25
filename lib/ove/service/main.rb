@@ -118,6 +118,20 @@ module OVE
 				)
 			end
 
+			# Create a video [draft] based on an import
+			# Accepts a video type
+			post '/import/:uuid/delete' do |uuid|
+				authorize!
+				user_id = session[:user_id]
+
+				import = Model::Import.find_by(uuid: uuid)
+				import.destroy
+
+				send_json(
+					success: 1
+				)
+			end
+
 			get '/import/:uuid/' do |uuid|
 				authorize!
 

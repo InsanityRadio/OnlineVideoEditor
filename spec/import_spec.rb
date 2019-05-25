@@ -30,6 +30,14 @@ describe OVE::Import::Import do
 			@chunks[uuid][:chunks]
 		end
 
+		def find_categories
+			@chunks.keys
+		end
+
+		def delete_category uuid
+			@chunks.delete uuid
+		end
+
 		def find_expiry uuid
 			Time.now.to_i + 10
 		end
@@ -114,6 +122,12 @@ describe OVE::Import::Import do
 
 			expect(imported.chunks.length).to eq(3)
 			expect(imported.chunks[0].path).to eq('dummy-5.ts')
+
+			expect(@importer.find_by_source(@source).length).to eq(1)
+
+			# Test that it deletes just fine
+			@importer.delete @source, imported
+			expect(@importer.find_by_source(@source).length).to eq(0)
 		end
 	end
 end

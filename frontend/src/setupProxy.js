@@ -24,7 +24,7 @@ module.exports = function (app) {
 
 	app.use(proxy('/api', {
 		//target: 'http://10.32.2.31/',
-		target: 'http://127.0.0.1:1964',
+		target: 'http://134.219.89.3:1964',
 		onProxyReq: proxyReq
 	}));
 }

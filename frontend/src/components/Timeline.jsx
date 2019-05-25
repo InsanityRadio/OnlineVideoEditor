@@ -722,4 +722,4 @@ class Timeline extends Component {
 
 }
 
-export default withStyles(styles)(Timeline);
+export default Timeline;

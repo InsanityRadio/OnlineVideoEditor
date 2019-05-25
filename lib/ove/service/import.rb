@@ -91,6 +91,25 @@ module OVE
 				)
 			end
 
+			post '/:service/import/:id/delete' do |service, uuid|
+				authorize!
+				user_id = session[:user_id]
+
+				my_sources = OVE::Ingest::SourceProvider.instance.sources
+				source = my_sources.find { |s| s.service == service }
+
+				halt 404 unless service
+
+				importer = OVE::Import::Import.instance
+				import = importer.find_by_id source, id
+
+				importer.delete service, import
+
+				send_json(
+					success: 1
+				)			
+			end
+
 			# Generate a HLS manifest for the imported video
 			get '/:service/import/:id/preview.m3u8' do |service, id|
 				my_sources = OVE::Ingest::SourceProvider.instance.sources

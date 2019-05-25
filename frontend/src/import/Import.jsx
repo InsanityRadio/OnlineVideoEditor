@@ -57,8 +57,14 @@ class Import extends Component {
 
 			let ready = this.state.ready
 
+			let newTimeCode = this.video.getTimecode();
+
+			if (Math.abs(newTimeCode - this.state.currentTime) > 5000 && this.timeline != null) {
+				// argh.
+			}
+
 			this.setState({
-				currentTime: this.video.getTimecode(),
+				currentTime: newTimeCode,
 				currentEdge: this.video.getEdgeTimecode(),
 				ready: true
 			}, () => ready || this.videoLoaded())
@@ -224,6 +230,13 @@ class Import extends Component {
 		})
 	}
 
+	setTimeline (timeline) {
+		if (this.timeline != null) {
+			return;
+		}
+		this.timeline = timeline;
+	}
+
 	render () {
 		return (
 
@@ -254,6 +267,7 @@ class Import extends Component {
 							onChange={ this.onTimelineUpdate.bind(this) }
 							segmentStart = { this.state.segmentStart }
 							segmentEnd = { this.state.segmentEnd }
+							ref = { this.setTimeline.bind(this) }
 
 							autoUpdateViewport={ true || this.state.video.playing }
 
