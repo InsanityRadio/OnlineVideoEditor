@@ -387,12 +387,20 @@ class Edit extends Component {
 	}
 
 	deleteClip () {
-		if (!confirm('Really delete video clip?')) {
+		if (!window.confirm('Really delete video clip?')) {
 			return;
 		}
 
 		let airTower = AirTower.getInstance();
-		airTower
+		airTower.core.deleteImport(this.getServiceName(), this.getImportID())
+			.then((response) => {
+				console.log('Deletion core?', response);
+			})
+
+		airTower.ingest.deleteImportByID(this.getServiceName(), this.getImportID())
+			.then((response) => {
+				console.log('Deletion ingest?', response);
+			})
 	}
 	
 	render () {
