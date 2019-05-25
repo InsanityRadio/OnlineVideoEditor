@@ -34,7 +34,9 @@ class Video extends Component {
 
 		if (this.props.hls) {
 			// We can't use web workers with WebPack/create-react-app.
-			this.hls = new Hls({ enableWorker: false });
+			// Setting a large maxBufferHole makes HLS.JS buffer video instead of skipping over anything missing
+			// it is VERY annoying on slow connections!
+			this.hls = new Hls({ enableWorker: false, maxBufferHole: 10 });
 			this.registerEvents();
 		}
 

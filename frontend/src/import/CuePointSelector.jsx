@@ -19,6 +19,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 class CuePointSelector extends Component {
 
+	clipDelay = 1.7;
+
 	state = {
 		dialog: '',
 		points: []
@@ -30,7 +32,18 @@ class CuePointSelector extends Component {
 
 	loadCuePoints () {
 		let airTower = AirTower.getInstance().ingest;
-		airTower.loadCuePoints().then((points) => this.setState({ points: points.reverse() }));
+		airTower.loadCuePoints().then((points) => this.setPoints(points));
+	}
+
+	setPoints (points) {
+		points = points.reverse();
+		for (var i = 0; i < points.length; i++) {
+			points[i].set('start_time', points[i].start_time + this.clipDelay);
+			points[i].set('end_time', points[i].end_time + this.clipDelay);
+		}
+		this.setState({
+			points: points
+		})
 	}
 
 	handleClose () {
