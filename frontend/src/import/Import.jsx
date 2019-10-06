@@ -47,7 +47,7 @@ class Import extends Component {
 
 		let topOfHour = (Date.now() / 1000 | 0); topOfHour = topOfHour - (topOfHour % 3600);
 
-		this.start = topOfHour - 3600*5;
+		this.start = topOfHour - 3600*23;
 
 		this.interval = setInterval(() => {
 

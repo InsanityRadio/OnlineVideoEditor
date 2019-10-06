@@ -72,7 +72,7 @@ export default class CoreAirTower extends IAirTower {
 	}
 
 	deleteImport (serviceName, uuid) {
-		return this.fetchWithForm('/_/import/' + uuid + '/delete', {}, {})
+		return this.fetchWithForm('/import/' + uuid + '/delete', {}, {})
 			.then((response) => response.success);
 	}
 

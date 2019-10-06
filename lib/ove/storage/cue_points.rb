@@ -20,7 +20,7 @@ module OVE
 
 			# Returns an array of the file paths of chunks we're storing currently
 			def points
-				cue_points = redis.zrange('cue_points', 0, -1).to_a
+				cue_points = redis.zrange('cue_points', Time.now.to_i - 86400, -1).to_a
 				cue_points.map {|point| OVE::Ingest::CuePoint.from JSON.parse(point)}
 			end
 		end
