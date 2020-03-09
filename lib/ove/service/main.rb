@@ -347,11 +347,22 @@ module OVE
 				)
 
 				halt 404 if video == nil 
+				worker_id = nil
+
+				# share this on social media if the user's clicked the button after the video render. 
+				# :)
+				if video.rendered
+					share.queued = true
+					share.saved
+
+					worker_id = OVE::Worker::Share.create(share_id: share.id)
+				end
 
 				send_json(
 					success: 1,
 					import: video.import.to_h,
-					share: share.to_h
+					share: share.to_h,
+					worker_id: worker_id
 				)
 			end
 

@@ -2,6 +2,7 @@ version: '2'
 
 services:
   capture:
+    restart: always
     build:
       context: .
       dockerfile: ./Dockerfile.capture
@@ -9,6 +10,7 @@ services:
       - http_proxy
       - PULL_URL=rtmp://10.32.0.222:1935/falcon/video
 
+    restart: always
     volumes: 
       - video:/video
 
@@ -20,6 +22,7 @@ services:
       - http_proxy
       - SERVICE=video
       - REDIS=redis://redis:6379
+    restart: always
     volumes:
       - video:/video
   index:
@@ -30,15 +33,17 @@ services:
       - http_proxy
       - SERVICE=video
       - REDIS=redis://redis:6379
+    restart: always
     volumes:
       - video:/video
 
   nginx:
-    image: nginx
+    image: nginx:mainline
     depends_on:
       - http
     ports:
       - '1965:80'
+    restart: always
     volumes:
       - ./nginx_dist.conf:/etc/nginx/nginx.conf
       - video:/video
@@ -50,6 +55,7 @@ services:
 #      - ./dummy.ts:/video.ts
 
   redis:
+    restart: always
     image: redis
 
 volumes:

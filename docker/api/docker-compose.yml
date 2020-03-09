@@ -2,6 +2,7 @@ version: '2'
 
 services:
   mariadb:
+    restart: always
     image: mariadb
     environment:
       - MYSQL_ROOT_PASSWORD=toor
@@ -10,6 +11,7 @@ services:
       - MYSQL_PASSWORD=ove
 
   http:
+    restart: always
     build:
       context: ../..
       dockerfile: ./docker/api/Dockerfile.http
@@ -29,6 +31,7 @@ services:
       - video:/video
 
   worker:
+    restart: always
     build:
       context: ../..
       dockerfile: ./docker/api/Dockerfile.worker
@@ -48,11 +51,13 @@ services:
       - video:/video
 
   redis:
+    restart: always
     image: redis
     ports:
       - '6379:6379'
 
   nginx:
+    restart: always
     image: nginx
     environment:
       - INGEST_URL=http://10.32.2.30

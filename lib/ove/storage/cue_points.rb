@@ -10,7 +10,7 @@ module OVE
 			# Delete points older than 24 hours. 
 			def clean_points(expiry_time = nil)
 				expiry_time = Time.now.to_i - 86400 if expiry_time.nil?
-				redis.zremrangebyscore('cue_points', 0, expiry_time)
+				redis.zremrangebyscore('cue_points', '-inf', expiry_time)
 			end
 
 			# Delete the chunk at the given storage path
@@ -20,7 +20,8 @@ module OVE
 
 			# Returns an array of the file paths of chunks we're storing currently
 			def points
-				cue_points = redis.zrange('cue_points', Time.now.to_i - 86400, -1).to_a
+				clean_points
+				cue_points = redis.zrangebyscore('cue_points', Time.now.to_i - 86400, "+inf").to_a
 				cue_points.map {|point| OVE::Ingest::CuePoint.from JSON.parse(point)}
 			end
 		end
