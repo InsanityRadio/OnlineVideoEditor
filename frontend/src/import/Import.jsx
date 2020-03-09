@@ -27,6 +27,10 @@ const styles = theme => ({
 
 class Import extends Component {
 
+	// in s, define the delay of the video codec
+	// allows times to align up properly!
+	clipDelay = 1.7;
+
 	state = {
 		currentTime: 0,
 		ready: false,
@@ -43,7 +47,7 @@ class Import extends Component {
 
 		let topOfHour = (Date.now() / 1000 | 0); topOfHour = topOfHour - (topOfHour % 3600);
 
-		this.start = topOfHour - 3600*5;
+		this.start = topOfHour - 3600*23;
 
 		this.interval = setInterval(() => {
 
@@ -57,8 +61,14 @@ class Import extends Component {
 
 			let ready = this.state.ready
 
+			let newTimeCode = this.video.getTimecode();
+
+			if (Math.abs(newTimeCode - this.state.currentTime) > 5000 && this.timeline != null) {
+				// argh.
+			}
+
 			this.setState({
-				currentTime: this.video.getTimecode(),
+				currentTime: newTimeCode,
 				currentEdge: this.video.getEdgeTimecode(),
 				ready: true
 			}, () => ready || this.videoLoaded())
@@ -176,8 +186,8 @@ class Import extends Component {
 		window.open('/api/ingest/'
 			+ this.getServiceName()
 			+ '/download.mp4?start_time='
-			+ this.state.segmentStart
-			+ '&end_time=' + this.state.segmentEnd,
+			+ (this.state.segmentStart + this.clipDelay)
+			+ '&end_time=' + (this.state.segmentEnd + this.clipDelay),
 			'_blank')
 	}
 
@@ -224,6 +234,13 @@ class Import extends Component {
 		})
 	}
 
+	setTimeline (timeline) {
+		if (this.timeline != null) {
+			return;
+		}
+		this.timeline = timeline;
+	}
+
 	render () {
 		return (
 
@@ -254,6 +271,8 @@ class Import extends Component {
 							onChange={ this.onTimelineUpdate.bind(this) }
 							segmentStart = { this.state.segmentStart }
 							segmentEnd = { this.state.segmentEnd }
+							clipDelay={ this.clipDelay }
+							ref = { this.setTimeline.bind(this) }
 
 							autoUpdateViewport={ true || this.state.video.playing }
 
@@ -312,12 +331,14 @@ class Import extends Component {
 								label="Start"
 								video={ this.video }
 								onChange={ this.setSegmentStart.bind(this) }
+								clipDelay = { this.clipDelay }
 								value={ this.state.segmentStart } />
 
 							<AbsoluteTimePicker
 								label="End"
 								video={ this.video }
 								onChange={ this.setSegmentEnd.bind(this) }
+								clipDelay = { this.clipDelay }
 								value={ this.state.segmentEnd } />
 
 							<br /><br />
@@ -357,7 +378,7 @@ class Import extends Component {
 				</div>
 
 				{ this.state.dialog == 'cue_point' && (
-					<CuePointSelector onClose={ this.closeSlateView.bind(this) } /> 
+					<CuePointSelector onClose={ this.closeSlateView.bind(this) } clipDelay={ this.clipDelay } /> 
 				)}
 
 				{ this.state.dialog == 'time' && (

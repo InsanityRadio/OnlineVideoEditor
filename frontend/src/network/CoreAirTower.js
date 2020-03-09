@@ -71,6 +71,11 @@ export default class CoreAirTower extends IAirTower {
 			.then((response) => this.createImportObj(response));
 	}
 
+	deleteImport (serviceName, uuid) {
+		return this.fetchWithForm('/import/' + uuid + '/delete', {}, {})
+			.then((response) => response.success);
+	}
+
 	updateVideo (uuid, videoID, configuration) {
 		return this.fetchWithForm('/import/' + uuid + '/' + videoID + '/save', {}, {
 			configuration: configuration

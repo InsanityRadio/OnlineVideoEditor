@@ -82,6 +82,16 @@ export default class IngestAirTower extends IAirTower {
 			})
 	}
 
+	deleteImportByID (service, importID) {
+		return this.fetchWithForm('/' + service + '/import/' + importID + '/delete', {}, {})
+			.then ((response) => {
+				if (response.success != 1) {
+					throw new Error('Failed to delete import ' + importID)
+				}
+				return true;
+			})
+	}
+	
 	loadCuePoints (service) {
 		return this.fetch('/' + service + '/cue_points')
 			.then((response) => {

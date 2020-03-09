@@ -20,8 +20,8 @@ module OVE
 			end
 
 			post '/:service/import' do |service|
-				start_time = params['start_time'].to_i
-				end_time = params['end_time'].to_i
+				start_time = params['start_time'].to_f
+				end_time = params['end_time'].to_f
 
 				# 1. Get a list of HLS chunks between start and end
 				# 2. Generate a unique ID for the category name
@@ -39,7 +39,7 @@ module OVE
 				send_json(
 					success: 1,
 					id: data.uuid,
-					data: data.serialize
+					data: data.serialize(false)
 				)
 			end
 
@@ -89,6 +89,25 @@ module OVE
 					success: 1,
 					import: import
 				)
+			end
+
+			post '/:service/import/:id/delete' do |service, uuid|
+				authorize!
+				user_id = session[:user_id]
+
+				my_sources = OVE::Ingest::SourceProvider.instance.sources
+				source = my_sources.find { |s| s.service == service }
+
+				halt 404 unless service
+
+				importer = OVE::Import::Import.instance
+				import = importer.find_by_id source, id
+
+				importer.delete service, import
+
+				send_json(
+					success: 1
+				)			
 			end
 
 			# Generate a HLS manifest for the imported video

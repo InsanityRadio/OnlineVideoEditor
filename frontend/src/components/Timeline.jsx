@@ -425,7 +425,7 @@ class Timeline extends Component {
 
 		for (var i = Math.floor(state.viewportStart); i < fullWidth; i++) {
 
-			let x = (i - state.viewportStart) * state.unitMap / state.unit;
+			let x = (i - state.viewportStart + this.props.clipDelay) * state.unitMap / state.unit;
 
 			let mySeconds = i;
 			let amIMaj = (i % state.unit) == 0;
@@ -722,4 +722,4 @@ class Timeline extends Component {
 
 }
 
-export default withStyles(styles)(Timeline);
+export default Timeline;

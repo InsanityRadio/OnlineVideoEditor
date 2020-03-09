@@ -1,0 +1,19 @@
+global:
+    # This variable defines a secret key that allows nodes to validate that communication is valid.
+    secret_key: "DXXXXXWWN44Vtv5HjqD1"
+
+ingest:
+    # This allows us to offload rendering onto another machine, provided this machine can access
+    #  this IP address. We use the above secret key to ensure security. 
+    public_uri: http://video-ingest-revprox.insanityradio.com
+
+share:
+    facebook:
+        app_access_token: secret
+        app_id: 1234
+        app_secret: 1234bbksadjalskd
+
+render:
+    scratch: /video
+    expiry: 2592000
+
