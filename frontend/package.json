@@ -13,7 +13,7 @@
     "http-proxy-middleware": "^0.19.1",
     "material-ui-next-pickers": "0.0.19",
     "material-ui-slider": "^3.0.0",
-    "moment": "^2.22.2",
+    "moment": "^2.29.4",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
     "react-input-mask": "^2.0.4",
